@@ -10,14 +10,12 @@
 
 AutoGluon:
   version: "latest"
-  params:
 
 Temperature_Scaling:
   extends: AutoGluon
   version: "latest"
   params:
     _percent_test: 0.75
-    _val_frac:
 
 AG_Ration:
   version: "latest"

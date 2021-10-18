@@ -11,6 +11,12 @@
 AutoGluon:
   version: "latest"
   params:
+
+Temperature_Scaling:
+  extends: AutoGluon
+  version: "latest"
+  params:
+    _percent_test: 0.75
     _val_frac:
 
 AG_Ration:
@@ -49,6 +55,12 @@ AutoGluon_bestquality:
   extends: AutoGluon
   params:
     presets: best_quality
+
+TempScaling_bestquality:
+  extends: AutoGluon
+  params:
+    presets: best_quality
+    calibrate: true
 
 autosklearn:
   version: 'latest'

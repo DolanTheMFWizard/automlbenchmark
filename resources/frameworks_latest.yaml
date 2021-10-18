@@ -15,7 +15,7 @@ Temperature_Scaling:
   extends: AutoGluon
   version: "latest"
   params:
-    _percent_test: 0.75
+    calibrate: true
 
 AG_Ration:
   version: "latest"
@@ -35,19 +35,6 @@ PseudoLabel:
   params:
     _threshold: 0.95
     _val_frac:
-
-ECE_PL:
-  version: "latest"
-  params:
-    _threshold: 0.95
-    _val_frac:
-
-ECE_PL_Ration:
-  version: "latest"
-  params:
-    _percent_test: 0.75
-    _threshold: 0.95
-    _val_frac: 0.2
 
 AutoGluon_bestquality:
   extends: AutoGluon

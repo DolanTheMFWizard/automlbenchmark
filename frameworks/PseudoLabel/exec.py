@@ -1,12 +1,9 @@
 import logging
 import os
 import shutil
+import warnings
 import sys
 import tempfile
-import warnings
-
-from test_helpers import ration_train_val
-
 warnings.simplefilter("ignore")
 
 if sys.platform == 'darwin':
@@ -14,10 +11,9 @@ if sys.platform == 'darwin':
 
 import matplotlib
 import pandas as pd
-
 matplotlib.use('agg')  # no need for tk
 
-from autogluon.tabular import TabularDataset, TabularPredictor
+from autogluon.tabular import TabularPredictor
 from autogluon.core.utils.savers import save_pd, save_pkl
 import autogluon.core.metrics as metrics
 from autogluon.tabular.version import __version__
@@ -49,8 +45,7 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    threshold = config.framework_params['_threshold']
-    val_frac = config.framework_params['_val_frac']
+    is_pseudo = config.framework_params.get('_use_pseudo', False)
 
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
@@ -58,45 +53,40 @@ def run(dataset, config):
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
-    train_df = TabularDataset(train)
-    test_df = TabularDataset(test)
-
-    train_data, validation_data = ration_train_val(train_df=train_df, label=label, problem_type=problem_type,
-                                                   holdout_frac=val_frac)
-
-    log.info(training_params)
     with Timer() as training:
-        training_params['time_limit'] = config.max_runtime_seconds
-        init_args = dict(
+        predictor = TabularPredictor(
+            label=label,
             eval_metric=perf_metric.name,
             path=models_dir,
-            problem_type=problem_type)
-        predictor, probabilities = TabularPredictor(
-            label=label, **init_args).bad_pseudo_fit(train_data=train_data, test_data=test_df,
-                                                     validation_data=validation_data,
-                                                     init_kwargs=init_args, fit_kwargs=training_params,
-                                                     max_iter=1, reuse_pred_test=False, threshold=threshold)
+            problem_type=problem_type,
+        ).fit(
+            train_data=train,
+            time_limit=config.max_runtime_seconds,
+            **training_params
+        )
+
+        if is_pseudo:
+            predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1)
+
     del train
 
     if is_classification:
         with Timer() as predict:
-            fake_probabilities = predictor.predict_proba(test_df, as_multiclass=True)
+            probabilities = predictor.predict_proba(test, as_multiclass=True)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
         with Timer() as predict:
-            predictions = predictor.predict(test_df, as_pandas=False)
+            predictions = predictor.predict(test, as_pandas=False)
         probabilities = None
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None
 
-    _leaderboard_extra_info = config.framework_params.get('_leaderboard_extra_info',
-                                                          False)  # whether to get extra model info (very verbose)
-    _leaderboard_test = config.framework_params.get('_leaderboard_test',
-                                                    False)  # whether to compute test scores in leaderboard (expensive)
+    _leaderboard_extra_info = config.framework_params.get('_leaderboard_extra_info', False)  # whether to get extra model info (very verbose)
+    _leaderboard_test = config.framework_params.get('_leaderboard_test', False)  # whether to compute test scores in leaderboard (expensive)
     leaderboard_kwargs = dict(silent=True, extra_info=_leaderboard_extra_info)
     # Disabled leaderboard test data input by default to avoid long running computation, remove 7200s timeout limitation to re-enable
     if _leaderboard_test:
-        leaderboard_kwargs['data'] = test_df
+        leaderboard_kwargs['data'] = test
 
     leaderboard = predictor.leaderboard(**leaderboard_kwargs)
     with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):

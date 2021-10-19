@@ -27,14 +27,14 @@ PL_Ration:
   version: "latest"
   params:
     _percent_test: 0.75
-    _threshold: .95
     _val_frac:
+    _use_pseudo: False
 
 PseudoLabel:
   version: "latest"
   params:
-    _threshold: 0.95
     _val_frac:
+    _use_pseudo: True
 
 AutoGluon_bestquality:
   extends: AutoGluon

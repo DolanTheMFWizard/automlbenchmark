@@ -15,7 +15,7 @@ Temperature_Scaling:
   extends: AutoGluon
   version: "latest"
   params:
-    calibrate: true
+    calibrate: True
 
 AG_Ration:
   version: "latest"
@@ -45,7 +45,7 @@ TempScaling_bestquality:
   extends: AutoGluon
   params:
     presets: best_quality
-    calibrate: true
+    calibrate: True
 
 autosklearn:
   version: 'latest'

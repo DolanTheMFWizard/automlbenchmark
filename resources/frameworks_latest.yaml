@@ -20,13 +20,13 @@ Temperature_Scaling:
 Feature_Generator:
   version: "latest"
   params:
-    use_feature_generator: True
+    use_feat_generator: True
 
 AutoGluon_FG:
   extends: Feature_Generator
   version: "latest"
   params:
-    use_feature_generator: False
+    use_feat_generator: False
 
 AG_Ration:
   version: "latest"

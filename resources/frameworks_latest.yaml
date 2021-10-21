@@ -47,6 +47,12 @@ PseudoLabel:
     _val_frac:
     _use_pseudo: True
 
+PseudoLabel_best:
+  version: "latest"
+  params:
+    presets: best_quality
+    _use_pseudo: True
+
 AutoGluon_bestquality:
   extends: AutoGluon
   params:

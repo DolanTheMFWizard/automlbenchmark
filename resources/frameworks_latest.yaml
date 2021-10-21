@@ -48,6 +48,7 @@ PseudoLabel:
     _use_pseudo: True
 
 PseudoLabel_best:
+  extends: PseudoLabel
   version: "latest"
   params:
     presets: best_quality

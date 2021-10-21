@@ -13,7 +13,7 @@ import matplotlib
 import pandas as pd
 matplotlib.use('agg')  # no need for tk
 
-from autogluon.tabular import TabularPredictor
+from autogluon.tabular import TabularPredictor, TabularDataset
 from autogluon.core.utils.savers import save_pd, save_pkl
 import autogluon.core.metrics as metrics
 from autogluon.tabular.version import __version__
@@ -48,6 +48,8 @@ def run(dataset, config):
     is_pseudo = config.framework_params.get('_use_pseudo', False)
 
     train, test = dataset.train.path, dataset.test.path
+    train = TabularDataset(train)
+    test = TabularDataset(test)
     label = dataset.target.name
     problem_type = dataset.problem_type
 

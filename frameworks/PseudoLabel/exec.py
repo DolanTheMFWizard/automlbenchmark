@@ -68,7 +68,7 @@ def run(dataset, config):
         )
 
         if is_pseudo:
-            predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1)
+            predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1, **training_params)
 
     del train
 

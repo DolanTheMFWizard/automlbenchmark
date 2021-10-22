@@ -70,7 +70,7 @@ def run(dataset, config):
         )
 
         if is_pseudo:
-            probabilities = predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1,
+            predictor, probabilities = predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1,
                                                       return_pred_prob=True, **training_params)
 
     del train
@@ -82,8 +82,11 @@ def run(dataset, config):
 
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
-        with Timer() as predict:
-            predictions = predictor.predict(test, as_pandas=False)
+        if not is_pseudo:
+            with Timer() as predict:
+                predictions = predictor.predict(test, as_pandas=False)
+        else:
+            predictions = probabilities
         probabilities = None
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None

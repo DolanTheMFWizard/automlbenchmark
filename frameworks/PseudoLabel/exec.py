@@ -1,9 +1,10 @@
 import logging
 import os
 import shutil
-import warnings
 import sys
 import tempfile
+import warnings
+
 warnings.simplefilter("ignore")
 
 if sys.platform == 'darwin':
@@ -11,6 +12,7 @@ if sys.platform == 'darwin':
 
 import matplotlib
 import pandas as pd
+
 matplotlib.use('agg')  # no need for tk
 
 from autogluon.tabular import TabularPredictor, TabularDataset
@@ -68,13 +70,16 @@ def run(dataset, config):
         )
 
         if is_pseudo:
-            predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1, **training_params)
+            probabilities = predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1,
+                                                      return_pred_prob=True, **training_params)
 
     del train
 
     if is_classification:
-        with Timer() as predict:
-            probabilities = predictor.predict_proba(test, as_multiclass=True)
+        if not is_pseudo:
+            with Timer() as predict:
+                probabilities = predictor.predict_proba(test, as_multiclass=True)
+
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
         with Timer() as predict:
@@ -83,8 +88,10 @@ def run(dataset, config):
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None
 
-    _leaderboard_extra_info = config.framework_params.get('_leaderboard_extra_info', False)  # whether to get extra model info (very verbose)
-    _leaderboard_test = config.framework_params.get('_leaderboard_test', False)  # whether to compute test scores in leaderboard (expensive)
+    _leaderboard_extra_info = config.framework_params.get('_leaderboard_extra_info',
+                                                          False)  # whether to get extra model info (very verbose)
+    _leaderboard_test = config.framework_params.get('_leaderboard_test',
+                                                    False)  # whether to compute test scores in leaderboard (expensive)
     leaderboard_kwargs = dict(silent=True, extra_info=_leaderboard_extra_info)
     # Disabled leaderboard test data input by default to avoid long running computation, remove 7200s timeout limitation to re-enable
     if _leaderboard_test:

@@ -69,9 +69,10 @@ def run(dataset, config):
             **training_params
         )
 
-        if is_pseudo:
+    if is_pseudo:
+        with Timer() as predict:
             predictor, probabilities = predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1,
-                                                      return_pred_prob=True, **training_params)
+                                                                 return_pred_prob=True, **training_params)
 
     del train
 

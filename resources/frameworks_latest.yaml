@@ -11,6 +11,18 @@
 AutoGluon:
   version: "latest"
 
+PL_Aux:
+  version: "latest"
+  params:
+    _val_frac:
+    _use_pseudo: True
+
+AG_PL_Aux:
+  version: "latest"
+  params:
+    _val_frac:
+    _use_pseudo: False
+
 Temperature_Scaling:
   extends: AutoGluon
   version: "latest"

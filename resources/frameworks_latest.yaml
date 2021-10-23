@@ -18,6 +18,7 @@ PL_Aux:
     _use_pseudo: True
 
 AG_PL_Aux:
+  extends: "PL_Aux"
   version: "latest"
   params:
     _val_frac:

@@ -61,6 +61,7 @@ PseudoLabel:
     _use_pseudo: True
 
 AG_PseudoLabel:
+  extends: PseudoLabel
   version: "latest"
   params:
     _val_frac:

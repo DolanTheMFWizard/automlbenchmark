@@ -68,15 +68,18 @@ def compare_dfs_improvement(df1, df2):
                 continue
             df1_score, df2_score = row1[metric].item(), row2[metric].item()
             problem_type = df1_rows.iloc[0]['type']
-            if problem_type == "binary":
-                score = (df2_score - df1_score) / df1_score if df1_score > df2_score else (df2_score - df1_score) / df2_score
-                binary.append(score)
-            elif problem_type == "multiclass":
-                score = (df1_score - df2_score) / df1_score if df1_score < df2_score else (df1_score - df2_score) / df2_score
-                multiclass.append(score)
-            else:
-                score = (df1_score - df2_score) / df1_score if df1_score < df2_score else (df1_score - df2_score) / df2_score
-                regression.append(score)
+            try:
+                if problem_type == "binary":
+                    score = (df2_score - df1_score) / df1_score if df1_score > df2_score else (df2_score - df1_score) / df2_score
+                    binary.append(score)
+                elif problem_type == "multiclass":
+                    score = (df1_score - df2_score) / df1_score if df1_score < df2_score else (df1_score - df2_score) / df2_score
+                    multiclass.append(score)
+                else:
+                    score = (df1_score - df2_score) / df1_score if df1_score < df2_score else (df1_score - df2_score) / df2_score
+                    regression.append(score)
+            except:
+                pass
 
     binary_improvement = round(np.mean(binary), 4)
     multiclass_improvement = round(np.mean(multiclass), 4)
@@ -276,7 +279,7 @@ def print_suite_result(base: pd.DataFrame, pseudo_label: pd.DataFrame, indepth=T
 # pseudo_label = "~/Downloads/results_automlbenchmark_1h8c_pseudo_label_norepeat.ag.1h8c.aws.20210909T202902.csv"
 
 # full
-base = "~/Downloads/results_automlbenchmark_0917_Vanilla_Rationp75.csv"
+base = "~/Downloads/4h8c_medium/results_automlbenchmark_10_18_AG.csv"
 # pseudo_label = "~/Downloads/results_automlbenchmark_1h8c_pseudo_label.ag.1h8c.aws.20210904T011959(1).csv"
 # pseudo_label = "~/Downloads/results_automlbenchmark_1h8c_pseudo_label.ag.1h8c.aws.20210905T192540.csv"
 # pseudo_label = "~/Downloads/results_automlbenchmark_1h8c_pseudo_label.ag.1h8c.aws.20210906T202118.csv"
@@ -292,7 +295,7 @@ base = "~/Downloads/results_automlbenchmark_0917_Vanilla_Rationp75.csv"
 # pseudo_label = "~/Downloads/results_automlbenchmark_1h8c_pseudo_label.ag.1h8c.aws.20210908T182233.csv" # no 300 cap
 # pseudo_label = "~/Downloads/results_automlbenchmark_1h8c_pseudo_label.ag.1h8c.aws.20210908T235902.csv" # removed feature metadata bug
 # pseudo_label = "~/Downloads/results_automlbenchmark_1h8c_pseudo_label.ag.1h8c.aws.20210909T070228.csv" # experimental
-pseudo_label = "~/Downloads/results_automlbenchmark_0917_PL_ration.csv" # final
+pseudo_label = "~/Downloads/4h8c_medium/results_automlbenchmark_10_24_temp_softplus_0.1.csv" # final
 
 # 4h
 # base = "result/baseline/4hmed/results_automlbenchmark_4h8c_autogluon.ag.4h8c.aws.20210827T163032.csv"

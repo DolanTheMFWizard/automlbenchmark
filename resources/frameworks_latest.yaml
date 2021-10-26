@@ -74,6 +74,13 @@ PseudoLabel_best:
     presets: best_quality
     _use_pseudo: True
 
+AG_PseudoLabel_best:
+  extends: PseudoLabel
+  version: "latest"
+  params:
+    presets: best_quality
+    _use_pseudo: False
+
 AutoGluon_bestquality:
   extends: AutoGluon
   params:

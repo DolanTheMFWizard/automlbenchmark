@@ -48,6 +48,15 @@ PL_Ration:
     _val_frac:
     _use_pseudo: True
 
+PL_Ration_split:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _percent_test: 0.75
+    _val_frac:
+    _use_pseudo: True
+    _time_split: 5
+
 AG_Ration:
   extends: PL_Ration
   version: "latest"
@@ -61,6 +70,14 @@ PseudoLabel:
   params:
     _val_frac:
     _use_pseudo: True
+
+PseudoLabel_split:
+  extends: PseudoLabel
+  version: "latest"
+  params:
+    _val_frac:
+    _use_pseudo: True
+    _time_split: 5
 
 AG_PseudoLabel:
   extends: PseudoLabel

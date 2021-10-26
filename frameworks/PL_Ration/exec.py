@@ -49,8 +49,9 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    percent_test = config.framework_params['_percent_test']
-    val_frac = config.framework_params['_val_frac']
+    percent_test = config.framework_params.get('_percent_test', None)
+    val_frac = config.framework_params.get('_val_frac', None)
+    is_pseudo = config.framework_params.get('_use_pseudo', False)
 
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
@@ -67,25 +68,36 @@ def run(dataset, config):
 
     log.info(training_params)
     with Timer() as training:
-        training_params['time_limit'] = config.max_runtime_seconds
-        init_args = dict(
+        predictor = TabularPredictor(
+            label=label,
             eval_metric=perf_metric.name,
             path=models_dir,
-            problem_type=problem_type)
-        predictor, probabilities = TabularPredictor(
-            label=label, **init_args).bad_pseudo_fit(train_data=train_data, test_data=test_df,
-                                                     validation_data=validation_data,
-                                                     init_kwargs=init_args, fit_kwargs=training_params,
-                                                     max_iter=1, reuse_pred_test=False, threshold=0.95)
+            problem_type=problem_type,
+        ).fit(
+            train_data=train_data,
+            time_limit=config.max_runtime_seconds,
+            tuning_data=validation_data,
+            **training_params
+        )
+
+    if is_pseudo:
+        with Timer() as predict:
+            predictor, probabilities = predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1,
+                                                                 return_pred_prob=True, **training_params)
+
     del train
 
     if is_classification:
-        with Timer() as predict:
-            fake_probabilities = predictor.predict_proba(test_df, as_multiclass=True)
+        if not is_pseudo:
+            with Timer() as predict:
+                probabilities = predictor.predict_proba(test, as_multiclass=True)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
-        with Timer() as predict:
-            predictions = predictor.predict(test_df, as_pandas=False)
+        if is_pseudo:
+            predictions = probabilities
+        else:
+            with Timer() as predict:
+                predictions = predictor.predict(test, as_pandas=False)
         probabilities = None
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None

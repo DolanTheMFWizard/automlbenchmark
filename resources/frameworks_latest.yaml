@@ -41,13 +41,15 @@ AutoGluon_FG:
   params:
     use_feat_generator: False
 
-AG_Ration:
+PL_Ration:
   version: "latest"
   params:
     _percent_test: 0.75
     _val_frac:
+    _use_pseudo: True
 
-PL_Ration:
+AG_Ration:
+  extends: PL_Ration
   version: "latest"
   params:
     _percent_test: 0.75

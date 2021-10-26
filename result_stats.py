@@ -17,7 +17,7 @@ def mean_score(df: pd.DataFrame, column: str = 'result'):
 
 
 def filter_type(df: pd.DataFrame):
-    return  df[df['type'] == 'binary'].append(df[df['type'] == 'multiclass']) #df[df['type'] == 'regression']
+    return df[df['type'] == 'binary'].append(df[df['type'] == 'multiclass']) #df[df['type'] == 'regression']
 
 
 def filter_samples(df, samples=100000, lower=True):
@@ -56,7 +56,7 @@ def print_inference_speedup(df1, df2):
 
 
 def compare_dfs_improvement(df1, df2):
-    metric = "result"
+    metric = "acc"
     binary, multiclass, regression = [], [], []
     for task in df1['task'].unique():
         df1_rows = df1[df1["task"] == task]
@@ -90,7 +90,7 @@ def compare_dfs_improvement(df1, df2):
 
 def compare_dfs(df1, df2, grouped=False):
     df1_better, equal_performance, df2_better = [], [], []
-    metric = "result"
+    metric = "acc"
     for task in df1['task'].unique():
         df1_rows = df1[df1["task"] == task]
         df2_rows = df2[df2["task"] == task]
@@ -129,7 +129,7 @@ def compare_dfs(df1, df2, grouped=False):
 
 
 def print_miscellaneous(df1, df2):
-    metric = "result"
+    metric = "acc"
     score_diffs = []
     for task in df1['task'].unique():
         df1_rows = df1[df1["task"] == task]

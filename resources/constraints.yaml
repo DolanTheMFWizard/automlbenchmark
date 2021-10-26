@@ -24,7 +24,7 @@ test:
 
 4h8c_temp:
   folds: 10
-  max_runtime_seconds: 14500
+  max_runtime_seconds: 14430
   cores: 8
   min_vol_size_mb: 500000
 

@@ -52,6 +52,7 @@ def run(dataset, config):
     percent_test = config.framework_params.get('_percent_test', None)
     val_frac = config.framework_params.get('_val_frac', None)
     is_pseudo = config.framework_params.get('_use_pseudo', False)
+    time_split = config.framework_params.get('_time_split', 1)
 
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
@@ -75,15 +76,18 @@ def run(dataset, config):
             problem_type=problem_type,
         ).fit(
             train_data=train_data,
-            time_limit=config.max_runtime_seconds,
+            time_limit=config.max_runtime_seconds / time_split,
             tuning_data=validation_data,
             **training_params
         )
 
     if is_pseudo:
         with Timer() as predict:
-            predictor, probabilities = predictor.fit_pseudolabel(test_data=test_df.drop(columns=[label]), max_iter=1,
-                                                                 return_pred_prob=True, **training_params)
+            predictor, probabilities = predictor.fit_pseudolabel(test_data=test_df.drop(columns=[label]),
+                                                                 max_iter=time_split,
+                                                                 return_pred_prob=True,
+                                                                 time_limit=config.max_runtime_seconds / time_split,
+                                                                 **training_params)
 
     del train
 

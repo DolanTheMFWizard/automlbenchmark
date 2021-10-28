@@ -55,7 +55,7 @@ PL_Ration_split:
     _percent_test: 0.75
     _val_frac:
     _use_pseudo: True
-    _time_split: 5
+    _num_iter: 5
 
 PL_Ration_split_best:
   extends: PL_Ration
@@ -64,7 +64,7 @@ PL_Ration_split_best:
     _percent_test: 0.75
     _val_frac:
     _use_pseudo: True
-    _time_split: 5
+    _num_iter: 5
     presets: best_quality
 
 AG_Ration:

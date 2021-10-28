@@ -39,7 +39,7 @@ AutoGluon_FG:
   extends: Feature_Generator
   version: "latest"
   params:
-    use_feat_generator: False
+    _use_autofeat: False
 
 PL_Ration:
   version: "latest"

@@ -29,7 +29,7 @@ else
     # VERSION="pseudo_label_POC"
     # REPO="https://github.com/gradientsky/autogluon.git"
 
-    VERSION="feature_generation"
+    VERSION="main"
     REPO="https://github.com/DolanTheMFWizard/autogluon.git"
     TARGET_DIR="${HERE}/lib/${PKG}"
     rm -Rf ${TARGET_DIR}

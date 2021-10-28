@@ -82,7 +82,7 @@ def run(dataset, config):
             y = y.reset_index()
             train[label] = y[label]
         except Exception as e:
-            print('failed')
+            log.warning(f"Autofeat or AutoImpute failed: {e}")
 
     with Timer() as training:
         predictor = TabularPredictor(

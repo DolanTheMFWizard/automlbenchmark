@@ -62,7 +62,7 @@ def run(dataset, config):
         train_data = TabularDataset(train)
         test_data = TabularDataset(test)
         test_data_nolab = test_data.drop(columns=[label])
-        predictor = TabularPredictor(label=label).fit(train_data, time_limit=30)
+        predictor = TabularPredictor(label=label).fit(train_data, time_limit=200)
         X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
             train_data, None, test_data_nolab, 0, 1)
 

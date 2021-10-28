@@ -35,11 +35,25 @@ Feature_Generator:
   params:
     _use_autofeat: True
 
+FG_best:
+  extends: Feature_Generator
+  version: "latest"
+  params:
+    _use_autofeat: True
+    presets: best_quality
+
 AutoGluon_FG:
   extends: Feature_Generator
   version: "latest"
   params:
     _use_autofeat: False
+
+AG_FG_best:
+  extends: Feature_Generator
+  version: "latest"
+  params:
+    _use_autofeat: False
+    presets: best_quality
 
 PL_Ration:
   version: "latest"

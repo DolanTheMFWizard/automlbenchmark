@@ -33,7 +33,7 @@ Temperature_Scaling:
 Feature_Generator:
   version: "latest"
   params:
-    use_feat_generator: True
+    _use_autofeat: True
 
 AutoGluon_FG:
   extends: Feature_Generator
@@ -47,6 +47,15 @@ PL_Ration:
     _percent_test: 0.75
     _val_frac:
     _use_pseudo: True
+
+PL_Ration_best:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _percent_test: 0.75
+    _val_frac:
+    _use_pseudo: True
+    presets: best_quality
 
 PL_Ration_split:
   extends: PL_Ration

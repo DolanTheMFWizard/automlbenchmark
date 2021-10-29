@@ -75,7 +75,7 @@ def run(dataset, config):
         y = y.reset_index()
         train[label] = y[label]
     except Exception as e:
-        raise Exception(f'Auto feat or auto impute failed: {e}')
+        raise Exception(f'Auto feat failed: {e}')
 
     with Timer() as training:
         predictor = TabularPredictor(

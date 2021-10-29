@@ -50,7 +50,6 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    use_autofeat = config.framework_params.get('_use_autofeat', False)
 
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
@@ -58,27 +57,30 @@ def run(dataset, config):
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
-    train_data = TabularDataset(train)
-    test_data = TabularDataset(test)
-    test_data_nolab = test_data.drop(columns=[label])
-    predictor = TabularPredictor(label=label).fit(train_data, time_limit=200)
-    X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
-        train_data, None, test_data_nolab, 0, 1)
+    try:
+        train_data = TabularDataset(train)
+        test_data = TabularDataset(test)
+        test_data_nolab = test_data.drop(columns=[label])
+        predictor = TabularPredictor(label=label).fit(train_data, time_limit=200)
+        X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
+            train_data, None, test_data_nolab, 0, 1)
 
-    auto_impute = SingleImputer()
+        auto_impute = SingleImputer()
 
-    if predictor.problem_type in PROBLEM_TYPES_CLASSIFICATION:
-        auto_feat = AutoFeatClassifier(verbose=1, feateng_steps=3, units={})
-    else:
-        auto_feat = AutoFeatRegressor(verbose=1, feateng_steps=3, units={})
+        if predictor.problem_type in PROBLEM_TYPES_CLASSIFICATION:
+            auto_feat = AutoFeatClassifier(verbose=1, feateng_steps=2, units={})
+        else:
+            auto_feat = AutoFeatRegressor(verbose=1, feateng_steps=2, units={})
 
-    X = auto_impute.fit_transform(X=X, y=y)
-    X = auto_feat.fit_transform(X=X, y=y)
-    test_data = auto_impute.transform(X_unlabeled)
-    test = auto_feat.transform(test_data)
-    train = X.copy()
-    y = y.reset_index()
-    train[label] = y[label]
+        X = auto_impute.fit_transform(X=X, y=y)
+        X = auto_feat.fit_transform(X=X, y=y)
+        test_data = auto_impute.transform(X_unlabeled)
+        test = auto_feat.transform(test_data)
+        train = X.copy()
+        y = y.reset_index()
+        train[label] = y[label]
+    except Exception as e:
+        raise Exception(f'Auto feat or auto impute failed: {e}')
 
     with Timer() as training:
         predictor = TabularPredictor(

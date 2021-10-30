@@ -63,7 +63,7 @@ def run(dataset, config):
 
         train_data = X.copy()
         y = y.reset_index(drop=True)
-        train_data[label] = y[label]
+        train_data[label] = y
         test = X_unlabeled.copy()
 
         category_features = train_data.dtypes == 'category'

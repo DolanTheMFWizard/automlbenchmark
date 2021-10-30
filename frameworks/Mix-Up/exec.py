@@ -62,7 +62,7 @@ def run(dataset, config):
             train_data, None, test_data, 0, 1)
 
         train_data = X.copy()
-        y = y.reset_index()
+        y = y.reset_index(drop=True)
         train_data[label] = y[label]
         test = X_unlabeled.copy()
 

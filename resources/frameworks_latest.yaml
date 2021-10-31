@@ -20,6 +20,9 @@ PL_Aux_Ration:
 Mix-Up:
   version: "latest"
 
+Mix-Up-Cate:
+  version: "latest"
+
 Temperature_Scaling:
   extends: AutoGluon
   version: "latest"

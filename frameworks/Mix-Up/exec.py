@@ -91,6 +91,7 @@ def run(dataset, config):
                 else:
                     train_data_mixed = x_curr_mixed
 
+        train_data_mixed = train_data_mixed.drop_duplicates()
         train = train_data.append(train_data_mixed)
         train = train.reset_index(drop=True)
 

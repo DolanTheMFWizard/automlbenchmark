@@ -5,8 +5,6 @@ import sys
 import tempfile
 import warnings
 
-from test_helpers import ration_data
-
 warnings.simplefilter("ignore")
 
 if sys.platform == 'darwin':
@@ -67,15 +65,19 @@ def run(dataset, config):
     if test_frac is not None:
         log.info(f"Using {test_frac} percent of all data as test")
         full_df = train_df.append(test_df).reset_index(drop=True)
-        train_df, test_df = ration_data(df=full_df, label=label, problem_type=problem_type,
-                                        holdout_frac=test_frac)
+        len_full_df = len(full_df)
+        log.info(f"Total data size is {len_full_df}")
+        sample_sz_test = int(test_frac * len_full_df)
+        test_df = full_df.sample(sample_sz_test)
+        train_df = full_df.drop(test_df.index)
 
     log.info(f"Using {len(train_df)} rows for train")
 
     if pseudo_frac is not None:
         log.info(f"Using {pseudo_frac} percent of test data as unlabeled data for pseudo")
-        unlabeled_df, test_df = ration_data(df=test_df, label=label, problem_type=problem_type,
-                                            holdout_frac=test_frac)
+        sample_sz_pseudo = int(pseudo_frac * len(test_df))
+        unlabeled_df = test_df.sample(sample_sz_pseudo)
+        test_df = test_df.drop(unlabeled_df.index)
     else:
         unlabeled_df = test_df.copy()
     unlabeled_df = unlabeled_df.drop(columns=[label])

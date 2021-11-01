@@ -30,6 +30,11 @@ Temperature_Scaling:
   params:
     calibrate: True
 
+Vector_Scaling:
+  version: "latest"
+  params:
+    calibrate: True
+
 Feature_Generator:
   version: "latest"
   params:

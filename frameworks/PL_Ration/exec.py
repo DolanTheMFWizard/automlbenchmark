@@ -5,7 +5,7 @@ import sys
 import tempfile
 import warnings
 
-from test_helpers import ration_train_test, ration_train_val
+from test_helpers import ration_data
 
 warnings.simplefilter("ignore")
 
@@ -50,7 +50,7 @@ def run(dataset, config):
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
     percent_test = config.framework_params.get('_percent_test', None)
-    val_frac = config.framework_params.get('_val_frac', None)
+    holdout_frac = config.framework_params.get('_holdout_frac', None)
     is_pseudo = config.framework_params.get('_use_pseudo', False)
     num_iter = config.framework_params.get('_num_iter', 1)
     time_split = 1 if num_iter == 1 else num_iter + 1
@@ -64,11 +64,27 @@ def run(dataset, config):
     train_df = TabularDataset(train)
     test_df = TabularDataset(test)
 
-    train_df, test_df = ration_train_test(train_df, test_df, percent_test)
-    train_data, validation_data = ration_train_val(train_df=train_df, label=label, problem_type=problem_type,
-                                                   holdout_frac=val_frac)
+    if percent_test is not None:
+        log.info(f"Using {percent_test} percent of all data as test")
+        full_df = train_df.append(test_df).reset_index(drop=True)
+        train_df, test_df = ration_data(df=full_df, label=label, problem_type=problem_type,
+                                        holdout_frac=percent_test)
+
+    log.info(f"Using {len(train_df)} rows for train")
+
+    if holdout_frac is not None:
+        log.info(f"Using {holdout_frac} percent of test data as unlabeled data for pseudo")
+        unlabeled_df, test_df = ration_data(df=test_df, label=label, problem_type=problem_type,
+                                            holdout_frac=percent_test)
+    else:
+        unlabeled_df = test_df.copy()
+    unlabeled_df = unlabeled_df.drop(columns=[label])
+
+    log.info(f"Using {len(unlabeled_df)} rows for pseudo")
+    log.info(f"Using {len(test_df)} rows for test")
 
     log.info(training_params)
+
     with Timer() as training:
         predictor = TabularPredictor(
             label=label,
@@ -76,15 +92,15 @@ def run(dataset, config):
             path=models_dir,
             problem_type=problem_type,
         ).fit(
-            train_data=train_data,
+            train_data=train_df,
             time_limit=config.max_runtime_seconds / time_split,
-            tuning_data=validation_data,
             **training_params
         )
 
     if is_pseudo:
+        log.info(f"Running Pseudolabel with {num_iter} iterations")
         with Timer() as predict:
-            predictor, probabilities = predictor.fit_pseudolabel(test_data=test_df.drop(columns=[label]),
+            predictor, probabilities = predictor.fit_pseudolabel(test_data=unlabeled_df,
                                                                  max_iter=num_iter,
                                                                  return_pred_prob=True,
                                                                  time_limit=config.max_runtime_seconds / time_split,
@@ -95,7 +111,7 @@ def run(dataset, config):
     if is_classification:
         if not is_pseudo:
             with Timer() as predict:
-                probabilities = predictor.predict_proba(test, as_multiclass=True)
+                probabilities = predictor.predict_proba(test_df, as_multiclass=True)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
         if is_pseudo:

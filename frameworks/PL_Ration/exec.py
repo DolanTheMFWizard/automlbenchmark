@@ -51,6 +51,7 @@ def run(dataset, config):
     pseudo_frac = config.framework_params.get('_pseudo_frac', None)
     is_pseudo = config.framework_params.get('_use_pseudo', False)
     num_iter = config.framework_params.get('_num_iter', 1)
+    is_transductive = config.framework_params.get('_is_transductive', True)
     time_split = 1 if num_iter == 1 else num_iter + 1
 
     train, test = dataset.train.path, dataset.test.path
@@ -104,23 +105,23 @@ def run(dataset, config):
         with Timer() as predict:
             predictor, probabilities = predictor.fit_pseudolabel(test_data=unlabeled_df,
                                                                  max_iter=num_iter,
-                                                                 return_pred_prob=True,
+                                                                 return_pred_prob=is_transductive,
                                                                  time_limit=config.max_runtime_seconds / time_split,
                                                                  **training_params)
 
     del train
 
     if is_classification:
-        if not is_pseudo:
+        if not is_transductive:
             with Timer() as predict:
                 probabilities = predictor.predict_proba(test_df, as_multiclass=True)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
-        if is_pseudo:
+        if is_transductive:
             predictions = probabilities
         else:
             with Timer() as predict:
-                predictions = predictor.predict(test, as_pandas=False)
+                predictions = predictor.predict(test_df, as_pandas=False)
         probabilities = None
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None

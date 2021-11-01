@@ -103,11 +103,18 @@ def run(dataset, config):
     if is_pseudo:
         log.info(f"Running Pseudolabel with {num_iter} iterations")
         with Timer() as predict:
-            predictor, probabilities = predictor.fit_pseudolabel(test_data=unlabeled_df,
-                                                                 max_iter=num_iter,
-                                                                 return_pred_prob=is_transductive,
-                                                                 time_limit=config.max_runtime_seconds / time_split,
-                                                                 **training_params)
+            if is_transductive:
+                predictor, probabilities = predictor.fit_pseudolabel(test_data=unlabeled_df,
+                                                                     max_iter=num_iter,
+                                                                     return_pred_prob=is_transductive,
+                                                                     time_limit=config.max_runtime_seconds / time_split,
+                                                                     **training_params)
+            else:
+                predictor = predictor.fit_pseudolabel(test_data=unlabeled_df,
+                                                      max_iter=num_iter,
+                                                      return_pred_prob=is_transductive,
+                                                      time_limit=config.max_runtime_seconds / time_split,
+                                                      **training_params)
 
     del train
 

@@ -49,8 +49,8 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    percent_test = config.framework_params.get('_percent_test', None)
-    holdout_frac = config.framework_params.get('_holdout_frac', None)
+    test_frac = config.framework_params.get('_test_frac', None)
+    pseudo_frac = config.framework_params.get('_pseudo_frac', None)
     is_pseudo = config.framework_params.get('_use_pseudo', False)
     num_iter = config.framework_params.get('_num_iter', 1)
     time_split = 1 if num_iter == 1 else num_iter + 1
@@ -64,18 +64,18 @@ def run(dataset, config):
     train_df = TabularDataset(train)
     test_df = TabularDataset(test)
 
-    if percent_test is not None:
-        log.info(f"Using {percent_test} percent of all data as test")
+    if test_frac is not None:
+        log.info(f"Using {test_frac} percent of all data as test")
         full_df = train_df.append(test_df).reset_index(drop=True)
         train_df, test_df = ration_data(df=full_df, label=label, problem_type=problem_type,
-                                        holdout_frac=percent_test)
+                                        holdout_frac=test_frac)
 
     log.info(f"Using {len(train_df)} rows for train")
 
-    if holdout_frac is not None:
-        log.info(f"Using {holdout_frac} percent of test data as unlabeled data for pseudo")
+    if pseudo_frac is not None:
+        log.info(f"Using {pseudo_frac} percent of test data as unlabeled data for pseudo")
         unlabeled_df, test_df = ration_data(df=test_df, label=label, problem_type=problem_type,
-                                            holdout_frac=percent_test)
+                                            holdout_frac=test_frac)
     else:
         unlabeled_df = test_df.copy()
     unlabeled_df = unlabeled_df.drop(columns=[label])

@@ -1,5 +1,5 @@
 ---
-project_repository: https://github.com/DolanTheMFWizard/automlbenchmark     # this is also the url used to clone the repository on ec2 instances
+project_repository: https://github.com/DolanTheMFWizard/automlbenchmark#acc     # this is also the url used to clone the repository on ec2 instances
                                                                           # when running those without docker.
                                                                           # to clone a specific branch/tag, add a url fragment, e.g.:
                                                                           # https://github.com/openml/automlbenchmark#stable

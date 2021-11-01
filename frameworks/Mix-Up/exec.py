@@ -5,8 +5,6 @@ import sys
 import tempfile
 import warnings
 
-from test_helpers import ration_data
-
 warnings.simplefilter("ignore")
 
 if sys.platform == 'darwin':
@@ -14,13 +12,15 @@ if sys.platform == 'darwin':
 
 import matplotlib
 import pandas as pd
+import numpy as np
 
 matplotlib.use('agg')  # no need for tk
 
-from autogluon.tabular import TabularDataset, TabularPredictor
+from autogluon.tabular import TabularPredictor, TabularDataset
 from autogluon.core.utils.savers import save_pd, save_pkl
 import autogluon.core.metrics as metrics
 from autogluon.tabular.version import __version__
+from autogluon.core.constants import REGRESSION
 
 from frameworks.shared.callee import call_run, result, output_subdir
 from frameworks.shared.utils import Timer, zip_path
@@ -49,41 +49,53 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    percent_test = config.framework_params.get('_percent_test', None)
-    holdout_frac = config.framework_params.get('_holdout_frac', None)
-    is_pseudo = config.framework_params.get('_use_pseudo', False)
-    num_iter = config.framework_params.get('_num_iter', 1)
-    time_split = 1 if num_iter == 1 else num_iter + 1
 
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
     problem_type = dataset.problem_type
 
+    if problem_type is REGRESSION:
+        train_data = TabularDataset(train)
+        test_data = TabularDataset(test)
+        predictor = TabularPredictor(label=label).fit(train_data, time_limit=10)
+        X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
+            train_data, None, test_data, 0, 1)
+
+        train_data = X.copy()
+        y = y.reset_index(drop=True)
+        train_data[label] = y
+
+        numerical_features = train_data.columns[train_data.dtypes != 'category']
+        categorical_features = train_data.columns[train_data.dtypes == 'category']
+
+        train_data_mixed = None
+
+        for index, row in train_data.iterrows():
+            train_data_subset = train_data.drop(index=index, axis='rows')
+            row_equal_cate = (row[categorical_features] == train_data_subset[categorical_features]).all(
+                axis='columns').copy()
+            row_eq_true = row_equal_cate[row_equal_cate]
+
+            if row_eq_true.empty:
+                continue
+            else:
+                lam = np.random.beta(0.4, 0.4)
+                sampled_idx = row_eq_true.sample(1)
+                sampled_row = train_data_subset.loc[sampled_idx.index]
+
+                x_curr_mixed = lam * sampled_row[numerical_features] + (1 - lam) * row[numerical_features]
+                x_curr_mixed[categorical_features] = row[categorical_features]
+
+                if train_data_mixed is not None:
+                    train_data_mixed = train_data_mixed.append(x_curr_mixed, ignore_index=True)
+                else:
+                    train_data_mixed = x_curr_mixed
+
+        train_data_mixed = train_data_mixed.drop_duplicates()
+        train = train_data.append(train_data_mixed)
+        train = train.reset_index(drop=True)
+
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
-
-    train_df = TabularDataset(train)
-    test_df = TabularDataset(test)
-
-    if percent_test is not None:
-        log.info(f"Using {percent_test} percent of all data as test")
-        full_df = train_df.append(test_df).reset_index(drop=True)
-        train_df, test_df = ration_data(df=full_df, label=label, problem_type=problem_type,
-                                        holdout_frac=percent_test)
-
-    log.info(f"Using {len(train_df)} rows for train")
-
-    if holdout_frac is not None:
-        log.info(f"Using {holdout_frac} percent of test data as unlabeled data for pseudo")
-        unlabeled_df, test_df = ration_data(df=test_df, label=label, problem_type=problem_type,
-                                            holdout_frac=percent_test)
-    else:
-        unlabeled_df = test_df.copy()
-    unlabeled_df = unlabeled_df.drop(columns=[label])
-
-    log.info(f"Using {len(unlabeled_df)} rows for pseudo")
-    log.info(f"Using {len(test_df)} rows for test")
-
-    log.info(training_params)
 
     with Timer() as training:
         predictor = TabularPredictor(
@@ -92,33 +104,20 @@ def run(dataset, config):
             path=models_dir,
             problem_type=problem_type,
         ).fit(
-            train_data=train_df,
-            time_limit=config.max_runtime_seconds / time_split,
+            train_data=train,
+            time_limit=config.max_runtime_seconds,
             **training_params
         )
-
-    if is_pseudo:
-        log.info(f"Running Pseudolabel with {num_iter} iterations")
-        with Timer() as predict:
-            predictor, probabilities = predictor.fit_pseudolabel(test_data=unlabeled_df,
-                                                                 max_iter=num_iter,
-                                                                 return_pred_prob=True,
-                                                                 time_limit=config.max_runtime_seconds / time_split,
-                                                                 **training_params)
 
     del train
 
     if is_classification:
-        if not is_pseudo:
-            with Timer() as predict:
-                probabilities = predictor.predict_proba(test_df, as_multiclass=True)
+        with Timer() as predict:
+            probabilities = predictor.predict_proba(test, as_multiclass=True)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
-        if is_pseudo:
-            predictions = probabilities
-        else:
-            with Timer() as predict:
-                predictions = predictor.predict(test, as_pandas=False)
+        with Timer() as predict:
+            predictions = predictor.predict(test, as_pandas=False)
         probabilities = None
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None
@@ -130,7 +129,7 @@ def run(dataset, config):
     leaderboard_kwargs = dict(silent=True, extra_info=_leaderboard_extra_info)
     # Disabled leaderboard test data input by default to avoid long running computation, remove 7200s timeout limitation to re-enable
     if _leaderboard_test:
-        leaderboard_kwargs['data'] = test_df
+        leaderboard_kwargs['data'] = test
 
     leaderboard = predictor.leaderboard(**leaderboard_kwargs)
     with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):

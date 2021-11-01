@@ -11,21 +11,26 @@
 AutoGluon:
   version: "latest"
 
-PL_Aux:
+PL_Aux_Ration:
   version: "latest"
   params:
+    _percent_test: 0.75
     _val_frac:
     _use_pseudo: True
 
-AG_PL_Aux:
-  extends: "PL_Aux"
+Mix-Up:
   version: "latest"
-  params:
-    _val_frac:
-    _use_pseudo: False
+
+Mix-Up-Cate:
+  version: "latest"
 
 Temperature_Scaling:
   extends: AutoGluon
+  version: "latest"
+  params:
+    calibrate: True
+
+Vector_Scaling:
   version: "latest"
   params:
     calibrate: True

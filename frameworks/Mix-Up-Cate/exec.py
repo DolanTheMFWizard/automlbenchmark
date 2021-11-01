@@ -12,6 +12,7 @@ if sys.platform == 'darwin':
 
 import matplotlib
 import pandas as pd
+import numpy as np
 
 matplotlib.use('agg')  # no need for tk
 
@@ -19,6 +20,7 @@ from autogluon.tabular import TabularPredictor, TabularDataset
 from autogluon.core.utils.savers import save_pd, save_pkl
 import autogluon.core.metrics as metrics
 from autogluon.tabular.version import __version__
+from autogluon.core.constants import REGRESSION
 
 from frameworks.shared.callee import call_run, result, output_subdir
 from frameworks.shared.utils import Timer, zip_path
@@ -47,13 +49,41 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    is_pseudo = config.framework_params.get('_use_pseudo', False)
 
     train, test = dataset.train.path, dataset.test.path
-    train = TabularDataset(train)
-    test = TabularDataset(test)
     label = dataset.target.name
     problem_type = dataset.problem_type
+
+    if problem_type is REGRESSION:
+        train_data = TabularDataset(train)
+        test_data = TabularDataset(test)
+        predictor = TabularPredictor(label=label).fit(train_data, time_limit=10)
+        X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
+            train_data, None, test_data, 0, 1)
+
+        train_data = X.copy()
+        y = y.reset_index(drop=True)
+        train_data[label] = y
+
+        categorical_features = train_data.columns[train_data.dtypes == 'category']
+
+        for feat in categorical_features:
+            train_data[feat] = pd.to_numeric(train_data[feat])
+
+        for feat in categorical_features:
+            X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
+
+        num_samples = int(len(train_data) / 2)
+        train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
+        train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
+        lam = np.random.beta(0.4, 0.4, num_samples)[:, None].repeat(len(train_data.columns), axis=1)
+
+        train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
+
+        train_data.append(train_data_mixed).reset_index(drop=True)
+
+        train = train_data
+        test = X_unlabeled
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
@@ -69,25 +99,15 @@ def run(dataset, config):
             **training_params
         )
 
-    if is_pseudo:
-        with Timer() as predict:
-            predictor, probabilities = predictor.fit_pseudolabel(test_data=test.drop(columns=[label]), max_iter=1,
-                                                                 use_aux=True, **training_params)
-
     del train
 
     if is_classification:
-        if not is_pseudo:
-            with Timer() as predict:
-                probabilities = predictor.predict_proba(test, as_multiclass=True)
-
+        with Timer() as predict:
+            probabilities = predictor.predict_proba(test, as_multiclass=True)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
-        if not is_pseudo:
-            with Timer() as predict:
-                predictions = predictor.predict(test, as_pandas=False)
-        else:
-            predictions = probabilities
+        with Timer() as predict:
+            predictions = predictor.predict(test, as_pandas=False)
         probabilities = None
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None

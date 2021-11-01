@@ -21,7 +21,6 @@ import autogluon.core.metrics as metrics
 from autogluon.tabular.version import __version__
 from autofeat import AutoFeatRegressor, AutoFeatClassifier
 from autogluon.core.constants import PROBLEM_TYPES_CLASSIFICATION
-from autoimpute.imputations import SingleImputer
 
 from frameworks.shared.callee import call_run, result, output_subdir
 from frameworks.shared.utils import Timer, zip_path
@@ -50,7 +49,6 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    use_autofeat = config.framework_params.get('_use_autofeat', False)
 
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
@@ -58,7 +56,7 @@ def run(dataset, config):
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
-    if use_autofeat:
+    try:
         train_data = TabularDataset(train)
         test_data = TabularDataset(test)
         test_data_nolab = test_data.drop(columns=[label])
@@ -66,23 +64,18 @@ def run(dataset, config):
         X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
             train_data, None, test_data_nolab, 0, 1)
 
-        auto_impute = SingleImputer()
-
         if predictor.problem_type in PROBLEM_TYPES_CLASSIFICATION:
-            auto_feat = AutoFeatClassifier(verbose=1, feateng_steps=3, units={})
+            auto_feat = AutoFeatClassifier(verbose=1, feateng_steps=2, units={})
         else:
-            auto_feat = AutoFeatRegressor(verbose=1, feateng_steps=3, units={})
+            auto_feat = AutoFeatRegressor(verbose=1, feateng_steps=2, units={})
 
-        try:
-            X = auto_impute.fit_transform(X=X, y=y)
-            X = auto_feat.fit_transform(X=X, y=y)
-            test_data = auto_impute.transform(X_unlabeled)
-            test = auto_feat.transform(test_data)
-            train = X.copy()
-            y = y.reset_index()
-            train[label] = y[label]
-        except Exception as e:
-            log.warning(f"Autofeat or AutoImpute failed: {e}")
+        X = auto_feat.fit_transform(X=X, y=y)
+        test = auto_feat.transform(test_data)
+        train = X.copy()
+        y = y.reset_index()
+        train[label] = y[label]
+    except Exception as e:
+        raise Exception(f'Auto feat failed: {e}')
 
     with Timer() as training:
         predictor = TabularPredictor(

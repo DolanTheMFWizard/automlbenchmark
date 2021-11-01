@@ -14,6 +14,7 @@ AutoGluon:
 PL_Aux_Ration:
   version: "latest"
   params:
+    _percent_test: 0.75
     _val_frac:
     _use_pseudo: True
 

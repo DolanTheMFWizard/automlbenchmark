@@ -106,13 +106,13 @@ def run(dataset, config):
             if is_transductive:
                 predictor, probabilities = predictor.fit_pseudolabel(test_data=unlabeled_df,
                                                                      max_iter=num_iter,
-                                                                     return_pred_prob=is_transductive,
+                                                                     return_pred_prob=True,
                                                                      time_limit=config.max_runtime_seconds / time_split,
                                                                      **training_params)
             else:
                 predictor = predictor.fit_pseudolabel(test_data=unlabeled_df,
                                                       max_iter=num_iter,
-                                                      return_pred_prob=is_transductive,
+                                                      return_pred_prob=False,
                                                       time_limit=config.max_runtime_seconds / time_split,
                                                       **training_params)
 

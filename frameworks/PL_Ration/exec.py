@@ -71,15 +71,16 @@ def run(dataset, config):
 
     len_test_df = len(test_df)
     len_all = len_test_df + len(train_df)
+    log.info(f"Total data size is {len_all}")
 
     if test_frac is not None:
-        log.info(f"Total data size is {len_all}")
         num_test = int(test_frac * len_all)
 
-        log.info(f"Using {test_frac} percent of all data as test or {num_test} rows")
         if num_test < len_test_df:
             raise Exception('AMLB expects all test data indexes to be returned for scoring'
                             f',but number of requested test rows: {num_test} is less than test length: {len_test_df}')
+
+        log.info(f"Using {test_frac} percent of all data as test or {num_test} rows")
 
         num_rows_take_from_train = num_test - len_test_df
         add_to_test_df = train_df.sample(num_rows_take_from_train, random_state=0)
@@ -87,13 +88,11 @@ def run(dataset, config):
         train_df = train_df.drop(add_to_test_df.index)
         test_df = test_df.append(add_to_test_df, verify_integrity=True)
 
-    log.info(f"Using {len(train_df)} rows for train")
-
     if unlabeled_frac is not None:
         if is_transductive:
             raise Exception(
                 '\'unlabeled_frac\' should only be set when doing semi-supervised, but \'transductive\' is set to true.')
-        log.info(f"Using {unlabeled_frac} percent of test data as unlabeled data for pseudolabeling")
+        log.info(f"Using {unlabeled_frac} percent of train data as unlabeled data for pseudolabeling")
         sample_sz_unlabeled = int(unlabeled_frac * len(train_df))
         unlabeled_df = train_df.sample(sample_sz_unlabeled, random_state=0)
         train_df = train_df.drop(unlabeled_df.index)
@@ -102,6 +101,7 @@ def run(dataset, config):
         unlabeled_df = test_df.copy()
     unlabeled_df = unlabeled_df.drop(columns=[label])
 
+    log.info(f"Using {len(train_df)} rows for train")
     log.info(f"Using {len(unlabeled_df)} rows for pseudolabeling")
     log.info(f"Using {len(test_df)} rows for test")
 

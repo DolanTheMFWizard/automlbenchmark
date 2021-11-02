@@ -63,23 +63,35 @@ def run(dataset, config):
     train_df = TabularDataset(train)
     test_df = TabularDataset(test)
 
+    len_test_df = len(test_df)
+    len_all = len_test_df + len(train_df)
+
     if test_frac is not None:
-        log.info(f"Using {test_frac} percent of all data as test")
-        full_df = train_df.append(test_df)
-        len_full_df = len(full_df)
-        log.info(f"Total data size is {len_full_df}")
-        sample_sz_test = int(test_frac * len_full_df)
-        test_df = full_df.sample(sample_sz_test)
-        train_df = full_df.drop(test_df.index)
+        log.info(f"Total data size is {len_all}")
+        num_test = int(test_frac * len_all)
+
+        log.info(f"Using {test_frac} percent of all data as test or {num_test} rows")
+        if num_test < len_test_df:
+            raise Exception('AMLB expects all test data indexes to be returned for scoring'
+                            f',but number of requested test rows: {num_test} is less than test length: {len_test_df}')
+
+        num_rows_take_from_train = num_test - len_test_df
+        add_to_test_df = train_df.sample(num_rows_take_from_train)
+        train_df = train_df.drop(add_to_test_df.index)
+        test_df = test_df.append(add_to_test_df)
 
     log.info(f"Using {len(train_df)} rows for train")
 
     if pseudo_frac is not None:
+        if is_transductive:
+            raise Exception(
+                '\'pseudo_frac\' should only be set when doing semi-supervised, but \'transductive\' is set to true.')
         log.info(f"Using {pseudo_frac} percent of test data as unlabeled data for pseudo")
         sample_sz_pseudo = int(pseudo_frac * len(test_df))
         unlabeled_df = test_df.sample(sample_sz_pseudo)
         test_df = test_df.drop(unlabeled_df.index)
     else:
+        log.info('All test data is used for pseudo fit')
         unlabeled_df = test_df.copy()
     unlabeled_df = unlabeled_df.drop(columns=[label])
 
@@ -115,6 +127,9 @@ def run(dataset, config):
                                                       return_pred_prob=False,
                                                       time_limit=config.max_runtime_seconds / time_split,
                                                       **training_params)
+    else:
+        log.info('No Pseudolabeling used')
+        probabilities = None
 
     del train
 

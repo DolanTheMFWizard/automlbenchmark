@@ -54,6 +54,10 @@ def run(dataset, config):
     is_transductive = config.framework_params.get('_is_transductive', True)
     time_split = 1 if num_iter == 1 else num_iter + 1
 
+    if is_transductive and not is_pseudo:
+        raise Exception('\'is_transductive\' is True, but \'is_pseudo\' is False,'
+                        ' pseudolabeling must be enabled in order to use transductive learning')
+
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
     problem_type = dataset.problem_type
@@ -62,6 +66,8 @@ def run(dataset, config):
 
     train_df = TabularDataset(train)
     test_df = TabularDataset(test)
+
+    test_df_og = test_df.copy()
 
     len_test_df = len(test_df)
     len_all = len_test_df + len(train_df)
@@ -77,8 +83,9 @@ def run(dataset, config):
 
         num_rows_take_from_train = num_test - len_test_df
         add_to_test_df = train_df.sample(num_rows_take_from_train, random_state=0)
+
         train_df = train_df.drop(add_to_test_df.index)
-        test_df = test_df.append(add_to_test_df)
+        test_df = test_df.append(add_to_test_df, verify_integrity=True)
 
     log.info(f"Using {len(train_df)} rows for train")
 
@@ -113,7 +120,7 @@ def run(dataset, config):
         )
 
     if is_pseudo:
-        log.info(f"Running Pseudolabel with {num_iter} iterations")
+        log.info(f"Running Pseudolabel fit with {num_iter} iterations")
         with Timer() as predict:
             if is_transductive:
                 predictor, probabilities = predictor.fit_pseudolabel(test_data=unlabeled_df,
@@ -145,6 +152,11 @@ def run(dataset, config):
             with Timer() as predict:
                 predictions = predictor.predict(test_df, as_pandas=False)
         probabilities = None
+
+    predictions = predictions.loc[test_df_og.index]
+
+    if probabilities is not None:
+        probabilities = probabilities.loc[test_df_og.index]
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None
 

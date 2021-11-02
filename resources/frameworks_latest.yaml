@@ -17,13 +17,6 @@ AG_Ration:
   params:
     _use_pseudo: False
 
-AG_Ration_large_test_transductive:
-  extends: PL_Ration
-  version: "latest"
-  params:
-    _use_pseudo: False
-    _test_frac: 0.75
-
 AG_Ration_large_test_SS:
   extends: PL_Ration
   version: "latest"

@@ -67,8 +67,6 @@ def run(dataset, config):
     train_df = TabularDataset(train)
     test_df = TabularDataset(test)
 
-    test_df_og = test_df.copy()
-
     len_test_df = len(test_df)
     len_all = len_test_df + len(train_df)
     log.info(f"Total data size is {len_all}")
@@ -152,11 +150,6 @@ def run(dataset, config):
             with Timer() as predict:
                 predictions = predictor.predict(test_df, as_pandas=False)
         probabilities = None
-
-    predictions = predictions.loc[test_df_og.index]
-
-    if probabilities is not None:
-        probabilities = probabilities.loc[test_df_og.index]
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None
 

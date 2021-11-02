@@ -29,10 +29,9 @@ AG_Ration_large_test_SS:
   version: "latest"
   params:
     _use_pseudo: False
-    _test_frac: 0.75
+    _test_frac: 0.55
     _pseudo_frac: 0.5
     _is_transductive: False
-
 
 AG_Ration_best:
   extends: PL_Ration
@@ -60,7 +59,7 @@ PL_Ration_large_test_SS:
   version: "latest"
   params:
     _use_pseudo: True
-    _test_frac: 0.75
+    _test_frac: 0.55
     _pseudo_frac: 0.5
     _is_transductive: False
 

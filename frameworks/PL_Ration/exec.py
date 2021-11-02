@@ -87,9 +87,9 @@ def run(dataset, config):
             raise Exception(
                 '\'pseudo_frac\' should only be set when doing semi-supervised, but \'transductive\' is set to true.')
         log.info(f"Using {pseudo_frac} percent of test data as unlabeled data for pseudo")
-        sample_sz_pseudo = int(pseudo_frac * len(test_df))
-        unlabeled_df = test_df.sample(sample_sz_pseudo)
-        test_df = test_df.drop(unlabeled_df.index)
+        sample_sz_pseudo = int(pseudo_frac * len(train_df))
+        unlabeled_df = train_df.sample(sample_sz_pseudo)
+        train_df = train_df.drop(unlabeled_df.index)
     else:
         log.info('All test data is used for pseudo fit')
         unlabeled_df = test_df.copy()

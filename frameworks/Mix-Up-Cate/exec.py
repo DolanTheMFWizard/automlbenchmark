@@ -20,7 +20,6 @@ from autogluon.tabular import TabularPredictor, TabularDataset
 from autogluon.core.utils.savers import save_pd, save_pkl
 import autogluon.core.metrics as metrics
 from autogluon.tabular.version import __version__
-from autogluon.core.constants import REGRESSION
 
 from frameworks.shared.callee import call_run, result, output_subdir
 from frameworks.shared.utils import Timer, zip_path
@@ -54,25 +53,30 @@ def run(dataset, config):
     label = dataset.target.name
     problem_type = dataset.problem_type
 
-    if problem_type is REGRESSION:
-        train_data = TabularDataset(train)
-        test_data = TabularDataset(test)
-        predictor = TabularPredictor(label=label).fit(train_data, time_limit=10)
-        X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
-            train_data, None, test_data, 0, 1)
+    train_data = TabularDataset(train)
+    test_data = TabularDataset(test)
 
-        train_data = X.copy()
-        y = y.reset_index(drop=True)
-        train_data[label] = y
+    test_data = test_data.drop(columns=[label])
 
-        categorical_features = train_data.columns[train_data.dtypes == 'category']
+    predictor = TabularPredictor(label=label).fit(train_data, time_limit=10)
+    X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
+        train_data, None, test_data, 0, 1)
 
-        for feat in categorical_features:
-            train_data[feat] = pd.to_numeric(train_data[feat])
+    train_data = X.copy()
+    y = y.reset_index(drop=True)
+    train_data[label] = y
 
-        for feat in categorical_features:
-            X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
+    categorical_features = train_data.columns[train_data.dtypes == 'category']
 
+    for feat in categorical_features:
+        train_data[feat] = pd.to_numeric(train_data[feat])
+
+    for feat in categorical_features:
+        X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
+
+    test = X_unlabeled.copy()
+
+    if predictor.problem_type == 'regression':
         num_samples = int(len(train_data) / 2)
         train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
         train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
@@ -81,9 +85,19 @@ def run(dataset, config):
         train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
 
         train_data.append(train_data_mixed).reset_index(drop=True)
+    else:
+        num_samples = int(len(train_data) / 4)
+        train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
+        train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
+        lam = np.ones(train_sample_1.shape) * 0.5
 
-        train = train_data
-        test = X_unlabeled
+        train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
+        train_data_mixed[label] = train_sample_1[label]
+        train_data.append(train_data_mixed).reset_index(drop=True)
+        train_data_mixed[label] = train_sample_2[label]
+        train_data.append(train_data_mixed).reset_index(drop=True)
+
+    train = train_data
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 

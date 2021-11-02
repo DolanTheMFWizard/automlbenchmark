@@ -45,6 +45,7 @@ PL_Ration_large_test_transductive:
   params:
     _use_pseudo: True
     _test_frac: 0.75
+    _is_transductive: True
 
 PL_Ration_large_test_SS:
   extends: PL_Ration
@@ -53,7 +54,6 @@ PL_Ration_large_test_SS:
     _use_pseudo: True
     _test_frac: 0.55
     _pseudo_frac: 0.5
-    _is_transductive: False
 
 PL_Ration_best:
   extends: PL_Ration

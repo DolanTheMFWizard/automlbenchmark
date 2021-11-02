@@ -65,7 +65,7 @@ def run(dataset, config):
 
     if test_frac is not None:
         log.info(f"Using {test_frac} percent of all data as test")
-        full_df = train_df.append(test_df).reset_index(drop=True)
+        full_df = train_df.append(test_df)
         len_full_df = len(full_df)
         log.info(f"Total data size is {len_full_df}")
         sample_sz_test = int(test_frac * len_full_df)

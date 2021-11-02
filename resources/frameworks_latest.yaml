@@ -23,7 +23,6 @@ AG_Ration_large_test_SS:
   params:
     _use_pseudo: False
     _test_frac: 0.55
-    _pseudo_frac: 0.5
     _is_transductive: False
 
 AG_Ration_best:

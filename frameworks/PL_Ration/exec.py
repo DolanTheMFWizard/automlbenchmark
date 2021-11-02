@@ -103,6 +103,8 @@ def run(dataset, config):
     log.info(f"Using {len(unlabeled_df)} rows for pseudolabeling")
     log.info(f"Using {len(test_df)} rows for test")
 
+    truth_series = test_df[label]
+
     log.info(training_params)
 
     with Timer() as training:
@@ -183,7 +185,8 @@ def run(dataset, config):
                   models_count=num_models_trained,
                   models_ensemble_count=num_models_ensemble,
                   training_duration=training.duration,
-                  predict_duration=predict.duration)
+                  predict_duration=predict.duration,
+                  truth=truth_series)
 
 
 def save_artifacts(predictor, leaderboard, config):

@@ -110,7 +110,14 @@ def run(dataset, config):
                 else:
                     sampled_rows = train_data.loc[row_eq_true.index]
                     lam = np.random.beta(0.4, 0.4, len(sampled_rows))[:, None].repeat(len(numerical_features), axis=1)
-                    x_curr_mixed = lam * sampled_rows[numerical_features] + (1 - lam) * row[numerical_features]
+
+                    lam_1 = lam * sampled_rows[numerical_features]
+                    lam_1 = lam_1.reset_index(drop=True)
+
+                    lam_2 = (1 - lam) * pd.concat([row.to_frame().T] * len(sampled_rows))[numerical_features]
+                    lam_2 = lam_2.reset_index(drop=True)
+
+                    x_curr_mixed = lam_1 + lam_2
 
                     if train_data_mixed is not None:
                         train_data_mixed = train_data_mixed.append(x_curr_mixed, ignore_index=True)

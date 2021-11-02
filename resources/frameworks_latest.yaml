@@ -41,6 +41,7 @@ PL_Ration:
     _use_pseudo: True
 
 PL_Ration_large_test_transductive:
+  extends: PL_Ration
   version: "latest"
   params:
     _use_pseudo: True

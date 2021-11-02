@@ -48,7 +48,7 @@ def run(dataset, config):
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
     test_frac = config.framework_params.get('_test_frac', None)
-    pseudo_frac = config.framework_params.get('_pseudo_frac', None)
+    unlabeled_frac = config.framework_params.get('_unlabeled_frac', None)
     is_pseudo = config.framework_params.get('_use_pseudo', False)
     num_iter = config.framework_params.get('_num_iter', 1)
     is_transductive = config.framework_params.get('_is_transductive', True)
@@ -82,13 +82,13 @@ def run(dataset, config):
 
     log.info(f"Using {len(train_df)} rows for train")
 
-    if pseudo_frac is not None:
+    if unlabeled_frac is not None:
         if is_transductive:
             raise Exception(
-                '\'pseudo_frac\' should only be set when doing semi-supervised, but \'transductive\' is set to true.')
-        log.info(f"Using {pseudo_frac} percent of test data as unlabeled data for pseudo")
-        sample_sz_pseudo = int(pseudo_frac * len(train_df))
-        unlabeled_df = train_df.sample(sample_sz_pseudo, random_state=0)
+                '\'unlabeled_frac\' should only be set when doing semi-supervised, but \'transductive\' is set to true.')
+        log.info(f"Using {unlabeled_frac} percent of test data as unlabeled data for pseudolabeling")
+        sample_sz_unlabeled = int(unlabeled_frac * len(train_df))
+        unlabeled_df = train_df.sample(sample_sz_unlabeled, random_state=0)
         train_df = train_df.drop(unlabeled_df.index)
     else:
         log.info('All test data is used for pseudo fit')

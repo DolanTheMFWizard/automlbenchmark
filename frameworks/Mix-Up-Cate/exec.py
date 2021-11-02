@@ -68,6 +68,9 @@ def run(dataset, config):
 
     categorical_features = train_data.columns[train_data.dtypes == 'category']
 
+    if predictor.problem_type != 'regression':
+        categorical_features.drop(columns=[label])
+
     for feat in categorical_features:
         train_data[feat] = pd.to_numeric(train_data[feat])
 
@@ -93,7 +96,7 @@ def run(dataset, config):
 
         train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
         train_data_mixed[label] = train_sample_1[label]
-        train_data.append(train_data_mixed).reset_index(drop=True)
+        train_data.append(train_data_mixed)
         train_data_mixed[label] = train_sample_2[label]
         train_data.append(train_data_mixed).reset_index(drop=True)
 

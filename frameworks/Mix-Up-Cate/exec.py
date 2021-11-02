@@ -58,8 +58,8 @@ def run(dataset, config):
 
     test_data = test_data.drop(columns=[label])
 
-    predictor = TabularPredictor(label=label).fit(train_data, time_limit=10)
-    X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor._learner.general_data_processing(
+    predictor_og = TabularPredictor(label=label).fit(train_data, time_limit=10)
+    X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor_og._learner.general_data_processing(
         train_data, None, test_data, 0, 1)
 
     train_data = X.copy()
@@ -67,9 +67,6 @@ def run(dataset, config):
     train_data[label] = y
 
     categorical_features = train_data.columns[train_data.dtypes == 'category']
-
-    if predictor.problem_type != 'regression':
-        categorical_features.drop(columns=[label])
 
     for feat in categorical_features:
         train_data[feat] = pd.to_numeric(train_data[feat])
@@ -79,7 +76,7 @@ def run(dataset, config):
 
     test = X_unlabeled.copy()
 
-    if predictor.problem_type == 'regression':
+    if predictor_og.problem_type == 'regression':
         num_samples = int(len(train_data) / 2)
         train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
         train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
@@ -121,6 +118,7 @@ def run(dataset, config):
     if is_classification:
         with Timer() as predict:
             probabilities = predictor.predict_proba(test, as_multiclass=True)
+            probabilities.columns = predictor_og._learner.label_cleaner.inverse_transform(probabilities.columns)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
         with Timer() as predict:

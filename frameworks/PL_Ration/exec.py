@@ -76,7 +76,7 @@ def run(dataset, config):
                             f',but number of requested test rows: {num_test} is less than test length: {len_test_df}')
 
         num_rows_take_from_train = num_test - len_test_df
-        add_to_test_df = train_df.sample(num_rows_take_from_train)
+        add_to_test_df = train_df.sample(num_rows_take_from_train, random_state=0)
         train_df = train_df.drop(add_to_test_df.index)
         test_df = test_df.append(add_to_test_df)
 
@@ -88,7 +88,7 @@ def run(dataset, config):
                 '\'pseudo_frac\' should only be set when doing semi-supervised, but \'transductive\' is set to true.')
         log.info(f"Using {pseudo_frac} percent of test data as unlabeled data for pseudo")
         sample_sz_pseudo = int(pseudo_frac * len(train_df))
-        unlabeled_df = train_df.sample(sample_sz_pseudo)
+        unlabeled_df = train_df.sample(sample_sz_pseudo, random_state=0)
         train_df = train_df.drop(unlabeled_df.index)
     else:
         log.info('All test data is used for pseudo fit')

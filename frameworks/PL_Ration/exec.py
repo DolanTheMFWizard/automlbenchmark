@@ -91,11 +91,11 @@ def run(dataset, config):
         unlabeled_df = train_df.sample(sample_sz_unlabeled, random_state=0)
         train_df = train_df.drop(unlabeled_df.index)
     else:
-        log.info('All test data is used for pseudo fit')
+        log.info('All test data is used for pseudolabeling fit')
         unlabeled_df = test_df.copy()
     unlabeled_df = unlabeled_df.drop(columns=[label])
 
-    log.info(f"Using {len(unlabeled_df)} rows for pseudo")
+    log.info(f"Using {len(unlabeled_df)} rows for pseudolabeling")
     log.info(f"Using {len(test_df)} rows for test")
 
     log.info(training_params)

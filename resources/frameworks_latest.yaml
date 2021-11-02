@@ -11,35 +11,39 @@
 AutoGluon:
   version: "latest"
 
+# Standard AG no changes
 AG_Ration:
   extends: PL_Ration
   version: "latest"
   params:
     _use_pseudo: False
 
-AG_Ration_large_test_SS:
-  extends: PL_Ration
-  version: "latest"
-  params:
-    _use_pseudo: False
-    _test_frac: 0.55
-    _is_transductive: False
-
-AG_Ration_best:
-  extends: PL_Ration
-  version: "latest"
-  params:
-    _percent_test: 0.75
-    _val_frac:
-    _use_pseudo: False
-    presets: best_quality
-    num_bags: 1
 
 PL_Ration:
   version: "latest"
   params:
     _use_pseudo: True
 
+
+# Large test. Then 50% of train used for PL
+AG_Ration_large_test_SS:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _use_pseudo: False
+    _test_frac: 0.55
+    _unlabeled_frac: 0.5
+
+PL_Ration_large_test_SS:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _use_pseudo: True
+    _test_frac: 0.55
+    _unlabeled_frac: 0.5
+
+
+# Large test transductive
 PL_Ration_large_test_transductive:
   extends: PL_Ration
   version: "latest"
@@ -48,13 +52,21 @@ PL_Ration_large_test_transductive:
     _test_frac: 0.75
     _is_transductive: True
 
-PL_Ration_large_test_SS:
+AG_Ration_large_test_transductive:
   extends: PL_Ration
   version: "latest"
   params:
-    _use_pseudo: True
-    _test_frac: 0.55
-    _pseudo_frac: 0.5
+    _use_pseudo: False
+    _test_frac: 0.75
+
+
+# Best quality standard
+AG_Ration_best:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _use_pseudo: False
+    presets: best_quality
 
 PL_Ration_best:
   extends: PL_Ration
@@ -63,6 +75,7 @@ PL_Ration_best:
     _use_pseudo: True
     presets: best_quality
     num_bags: 1
+
 
 PL_Ration_split:
   extends: PL_Ration

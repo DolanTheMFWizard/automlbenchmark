@@ -98,34 +98,33 @@ def run(dataset, config):
         categorical_features = train_data.columns[train_data.dtypes == 'category']
 
         if not categorical_features.empty:
-            train_data_mixed = None
-            for index, row in train_data.iterrows():
-                train_data_subset = train_data.drop(index=index, axis='rows')
-                row_equal_cate = (row[categorical_features] == train_data_subset[categorical_features]).all(
-                    axis='columns').copy()
-                row_eq_true = row_equal_cate[row_equal_cate]
-
-                if row_eq_true.empty:
+            grouped_df = train_data.groupby(by=list(categorical_features))
+            mixed_rows_df = None
+            for key, value in grouped_df.groups.items():
+                num_rows = len(value)
+                if num_rows < 2:
                     continue
+
+                if num_rows % 2 != 0:
+                    num_rows -= 1
+
+                selected_rows = train_data.loc[value[:num_rows]]
+
+                half_num_rows = int(num_rows / 2)
+
+                sample_1_df = selected_rows.iloc[:half_num_rows].reset_index(drop=True)
+                sample_2_df = selected_rows.iloc[half_num_rows:].reset_index(drop=True)
+
+                lam = np.random.beta(0.4, 0.4, half_num_rows)[:, None].repeat(len(numerical_features), axis=1)
+
+                new_mixed_rows_df = lam * sample_1_df[numerical_features] + (1 - lam) * sample_2_df[numerical_features]
+
+                if mixed_rows_df is not None:
+                    mixed_rows_df = mixed_rows_df.append(new_mixed_rows_df, ignore_index=True)
                 else:
-                    sampled_rows = train_data.loc[row_eq_true.index]
-                    lam = np.random.beta(0.4, 0.4, len(sampled_rows))[:, None].repeat(len(numerical_features), axis=1)
+                    mixed_rows_df = new_mixed_rows_df
 
-                    lam_1 = lam * sampled_rows[numerical_features]
-                    lam_1 = lam_1.reset_index(drop=True)
-
-                    lam_2 = (1 - lam) * pd.concat([row.to_frame().T] * len(sampled_rows))[numerical_features]
-                    lam_2 = lam_2.reset_index(drop=True)
-
-                    x_curr_mixed = lam_1 + lam_2
-
-                    if train_data_mixed is not None:
-                        train_data_mixed = train_data_mixed.append(x_curr_mixed, ignore_index=True)
-                    else:
-                        train_data_mixed = x_curr_mixed
-
-            train_data_mixed = train_data_mixed.drop_duplicates()
-            train_data.append(train_data_mixed).reset_index(drop=True)
+            train_data = train_data.append(mixed_rows_df, ignore_index=True).reset_index(drop=True)
 
     test = X_unlabeled.copy()
     train = train_data

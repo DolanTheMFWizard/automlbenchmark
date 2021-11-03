@@ -39,20 +39,12 @@ if __name__ == '__main__':
     # parser.add_argument('s3_bucket', type=str, help="Name of S3 bucket that results get outputted to")
     # parser.add_argument('version_name', type=str, help='')
     # args = parser.parse_args()
-
-    folder_list = ['ag_ration_best.ag.4h8c.aws.20211103T030018', 'ag_ration_large_test_ss.ag.4h8c.aws.20211102T225951',
-                   'ag_ration_large_test_transductive.ag.4h8c.aws.20211103T020012', 'ag_ration.ag.4h8c.aws.20211102T205938',
-                   'pl_ration_best.ag.4h8c.aws.20211103T040025', 'pl_ration_large_test_ss.ag.4h8c.aws.20211102T235958',
-                   'pl_ration_large_test_transductive.ag.4h8c.aws.20211103T010004', 'pl_ration.ag.4h8c.aws.20211102T215945']
-
-    for folder in folder_list:
-        aggregate_from_params(
-            s3_bucket='automl-benchmark-dylan',
-            s3_prefix='',
-            version_name=f'ec2/{folder}',
-            suffix='',
-            contains='',
-            results_prefix='',
-            save_path_str_replace_dict={'_ec2/': '_'},
-        )
-
+    aggregate_from_params(
+        s3_bucket='automl-benchmark-dylan',
+        s3_prefix='',
+        version_name='ec2/vanilla',
+        suffix='',
+        contains='',
+        results_prefix='',
+        save_path_str_replace_dict={'_ec2/': '_'},
+    )

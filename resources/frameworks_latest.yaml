@@ -118,6 +118,15 @@ Vector_Scaling:
   params:
     calibrate: True
 
+Refit_Full:
+  version: "latest"
+
+Vector_Scaling_best:
+  extends: Vector_Scaling
+  version: "latest"
+  params:
+    calibrate: True
+
 Feature_Generator:
   version: "latest"
   params:

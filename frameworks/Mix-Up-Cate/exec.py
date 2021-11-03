@@ -66,24 +66,22 @@ def run(dataset, config):
     y = y.reset_index(drop=True)
     train_data[label] = y
 
-    categorical_features = train_data.columns[train_data.dtypes == 'category']
-
     if predictor_og.problem_type == 'regression':
-    #     for feat in categorical_features:
-    #         train_data[feat] = pd.to_numeric(train_data[feat])
-    #
-    #     for feat in categorical_features:
-    #         X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
-    #
-    #     num_samples = int(len(train_data) / 2)
-    #     train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
-    #     train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
-    #     lam = np.random.beta(0.4, 0.4, num_samples)[:, None].repeat(len(train_data.columns), axis=1)
-    #
-    #     train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
-    #
-    #     train_data.append(train_data_mixed).reset_index(drop=True)
-    # else:
+        # for feat in categorical_features:
+        #     train_data[feat] = pd.to_numeric(train_data[feat])
+        #
+        # for feat in categorical_features:
+        #     X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
+        #
+        # num_samples = int(len(train_data) / 2)
+        # train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
+        # train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
+        # lam = np.random.beta(0.4, 0.4, num_samples)[:, None].repeat(len(train_data.columns), axis=1)
+        #
+        # train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
+        #
+        # train_data.append(train_data_mixed).reset_index(drop=True)
+        # else:
         # num_samples = int(len(train_data) / 4)
         # train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
         # train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
@@ -96,7 +94,7 @@ def run(dataset, config):
         # train_data.append(train_data_mixed).reset_index(drop=True)
         numerical_features = train_data.columns[train_data.dtypes != 'category']
         categorical_features = train_data.columns[train_data.dtypes == 'category']
-
+        #
         if not categorical_features.empty:
             grouped_df = train_data.groupby(by=list(categorical_features))
             mixed_rows_df = None
@@ -148,7 +146,6 @@ def run(dataset, config):
     if is_classification:
         with Timer() as predict:
             probabilities = predictor.predict_proba(test, as_multiclass=True)
-            probabilities.columns = predictor_og._learner.label_cleaner.inverse_transform(probabilities.columns)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
         with Timer() as predict:

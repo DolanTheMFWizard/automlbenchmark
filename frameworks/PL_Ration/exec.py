@@ -51,7 +51,7 @@ def run(dataset, config):
     unlabeled_frac = config.framework_params.get('_unlabeled_frac', None)
     is_pseudo = config.framework_params.get('_use_pseudo', False)
     num_iter = config.framework_params.get('_num_iter', 1)
-    is_transductive = config.framework_params.get('_is_transductive', True)
+    is_transductive = config.framework_params.get('_is_transductive', False)
     time_split = 1 if num_iter == 1 else num_iter + 1
 
     if is_transductive and not is_pseudo:

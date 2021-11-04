@@ -4,6 +4,7 @@ import shutil
 import sys
 import tempfile
 import warnings
+from imblearn.over_sampling import BorderlineSMOTE
 
 warnings.simplefilter("ignore")
 
@@ -123,6 +124,12 @@ def run(dataset, config):
                     mixed_rows_df = new_mixed_rows_df
 
             train_data = train_data.append(mixed_rows_df, ignore_index=True).reset_index(drop=True)
+    else:
+        X_resampled, y_resampled = BorderlineSMOTE().fit_resample(X, y)
+        resampled_df = pd.DataFrame(X_resampled, columns=X.columns)
+        resampled_df[label] = pd.Series(y_resampled)
+
+        train_data = train_data.append(resampled_df, ignore_index=True).reset_index(drop=True)
 
     test = X_unlabeled.copy()
     train = train_data

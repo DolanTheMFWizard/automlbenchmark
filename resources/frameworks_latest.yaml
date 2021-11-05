@@ -187,7 +187,9 @@ Vector_Scaling:
     calibrate: True
 
 Refit_Full:
+  extends: AutoGluon
   version: "latest"
+  _refit_full: True
 
 Vector_Scaling_best:
   extends: Vector_Scaling

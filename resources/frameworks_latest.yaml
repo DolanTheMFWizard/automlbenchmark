@@ -71,7 +71,7 @@ PL_Ration_best:
   params:
     _use_pseudo: True
     presets: best_quality
-    num_bags: 1
+    num_bag_folds: 1
 
 # Large test. Then 50% of train used for PL
 AG_best_Ration_large_test_SS:
@@ -91,7 +91,7 @@ PL_best_Ration_large_test_SS:
     _test_frac: 0.55
     _unlabeled_frac: 0.5
     presets: "best_quality"
-    num_bags: 1
+    num_bag_folds: 1
 
 # Large test transductive
 PL_best_Ration_large_test_transductive:
@@ -102,7 +102,7 @@ PL_best_Ration_large_test_transductive:
     _test_frac: 0.75
     _is_transductive: True
     presets: "best_quality"
-    num_bags: 1
+    num_bag_folds: 1
 
 AG_best_Ration_large_test_transductive:
   extends: PL_Ration
@@ -160,7 +160,7 @@ PL_Ration_split_best:
     _use_pseudo: True
     _num_iter: 5
     presets: best_quality
-    num_bags: 1
+    num_bag_folds: 1
 
 PL_Aux_Ration:
   version: "latest"
@@ -174,6 +174,25 @@ Mix-Up:
 
 Mix-Up-Cate:
   version: "latest"
+  params:
+    _is_data_aug: True
+
+Mix-Up-Cate_best:
+  extends: Mix-Up-Cate
+  version: "latest"
+  params:
+    _is_data_aug: True
+    presets: "best_quality"
+
+AG_Mix-Up-Cate:
+  extends: Mix-Up-Cate
+  version: "latest"
+
+AG_Mix-Up-Cate_best:
+  extends: Mix-Up-Cate
+  version: "latest"
+  params:
+    presets: "best_quality"
 
 Temperature_Scaling:
   extends: AutoGluon

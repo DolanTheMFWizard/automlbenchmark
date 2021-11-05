@@ -121,7 +121,7 @@ def run(dataset, config):
         )
 
     if is_pseudo:
-        log.info(f"Running Pseudolabel fit with {num_iter} iterations")
+        log.info(f"Running Pseudolabel fit with max {num_iter} iterations")
         if is_transductive:
             with Timer() as predict:
                 predictor, probabilities = predictor.fit_pseudolabel(pseudo_data=unlabeled_df,

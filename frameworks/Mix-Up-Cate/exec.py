@@ -50,88 +50,95 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
+    is_data_aug = config.framework_params.get('_is_data_aug', False)
 
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
     problem_type = dataset.problem_type
 
-    train_data = TabularDataset(train)
-    test_data = TabularDataset(test)
+    if is_data_aug:
+        train_data = TabularDataset(train)
+        test_data = TabularDataset(test)
 
-    predictor_og = TabularPredictor(label=label).fit(train_data, time_limit=10)
-    X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor_og._learner.general_data_processing(
-        train_data, test_data, test_data, 0, 1)
+        predictor_og = TabularPredictor(label=label).fit(train_data, time_limit=10)
+        X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor_og._learner.general_data_processing(
+            train_data, test_data, test_data, 0, 1)
 
-    train_data = X.copy()
-    y = y.reset_index(drop=True)
-    train_data[label] = y
+        train_data = X.copy()
+        train_data[label] = y
 
-    if predictor_og.problem_type == 'regression':
-        # for feat in categorical_features:
-        #     train_data[feat] = pd.to_numeric(train_data[feat])
-        #
-        # for feat in categorical_features:
-        #     X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
-        #
-        # num_samples = int(len(train_data) / 2)
-        # train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
-        # train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
-        # lam = np.random.beta(0.4, 0.4, num_samples)[:, None].repeat(len(train_data.columns), axis=1)
-        #
-        # train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
-        #
-        # train_data.append(train_data_mixed).reset_index(drop=True)
-        # else:
-        # num_samples = int(len(train_data) / 4)
-        # train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
-        # train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
-        # lam = np.ones(train_sample_1.shape) * 0.5
-        #
-        # train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
-        # train_data_mixed[label] = train_sample_1[label]
-        # train_data.append(train_data_mixed)
-        # train_data_mixed[label] = train_sample_2[label]
-        # train_data.append(train_data_mixed).reset_index(drop=True)
-        numerical_features = train_data.columns[train_data.dtypes != 'category']
-        categorical_features = train_data.columns[train_data.dtypes == 'category']
-        #
-        if not categorical_features.empty:
-            grouped_df = train_data.groupby(by=list(categorical_features))
-            mixed_rows_df = None
-            for key, value in grouped_df.groups.items():
-                num_rows = len(value)
-                if num_rows < 2:
-                    continue
+        if predictor_og.problem_type == 'regression':
+            # for feat in categorical_features:
+            #     train_data[feat] = pd.to_numeric(train_data[feat])
+            #
+            # for feat in categorical_features:
+            #     X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
+            #
+            # num_samples = int(len(train_data) / 2)
+            # train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
+            # train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
+            # lam = np.random.beta(0.4, 0.4, num_samples)[:, None].repeat(len(train_data.columns), axis=1)
+            #
+            # train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
+            #
+            # train_data.append(train_data_mixed).reset_index(drop=True)
+            # else:
+            # num_samples = int(len(train_data) / 4)
+            # train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
+            # train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
+            # lam = np.ones(train_sample_1.shape) * 0.5
+            #
+            # train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
+            # train_data_mixed[label] = train_sample_1[label]
+            # train_data.append(train_data_mixed)
+            # train_data_mixed[label] = train_sample_2[label]
+            # train_data.append(train_data_mixed).reset_index(drop=True)
+            numerical_features = train_data.columns[train_data.dtypes != 'category']
+            categorical_features = train_data.columns[train_data.dtypes == 'category']
+            #
+            if not categorical_features.empty:
+                grouped_df = train_data.groupby(by=list(categorical_features))
+                mixed_rows_df = None
+                for key, value in grouped_df.groups.items():
+                    num_rows = len(value)
+                    if num_rows < 2:
+                        continue
 
-                if num_rows % 2 != 0:
-                    num_rows -= 1
+                    if num_rows % 2 != 0:
+                        num_rows -= 1
 
-                selected_rows = train_data.loc[value[:num_rows]]
+                    selected_rows = train_data.loc[value[:num_rows]]
 
-                half_num_rows = int(num_rows / 2)
+                    half_num_rows = int(num_rows / 2)
 
-                sample_1_df = selected_rows.iloc[:half_num_rows].reset_index(drop=True)
-                sample_2_df = selected_rows.iloc[half_num_rows:].reset_index(drop=True)
+                    sample_1_df = selected_rows.iloc[:half_num_rows].reset_index(drop=True)
+                    sample_2_df = selected_rows.iloc[half_num_rows:].reset_index(drop=True)
 
-                lam = np.random.beta(0.4, 0.4, half_num_rows)[:, None].repeat(len(numerical_features), axis=1)
+                    lam = np.random.beta(0.4, 0.4, half_num_rows)[:, None].repeat(len(numerical_features), axis=1)
 
-                new_mixed_rows_df = lam * sample_1_df[numerical_features] + (1 - lam) * sample_2_df[numerical_features]
+                    new_mixed_rows_df = lam * sample_1_df[numerical_features] + (1 - lam) * sample_2_df[
+                        numerical_features]
 
-                if mixed_rows_df is not None:
-                    mixed_rows_df = mixed_rows_df.append(new_mixed_rows_df, ignore_index=True)
-                else:
-                    mixed_rows_df = new_mixed_rows_df
+                    if mixed_rows_df is not None:
+                        mixed_rows_df = mixed_rows_df.append(new_mixed_rows_df, ignore_index=True)
+                    else:
+                        mixed_rows_df = new_mixed_rows_df
 
-            train_data = train_data.append(mixed_rows_df, ignore_index=True).reset_index(drop=True)
+                log.info(f'Adding in {len(mixed_rows_df)} rows of mix-up')
+                train_data = train_data.append(mixed_rows_df, ignore_index=True).reset_index(drop=True)
+        else:
+            X_resampled, y_resampled = BorderlineSMOTE().fit_resample(X, y)
+            resampled_df = pd.DataFrame(X_resampled, columns=X.columns)
+            resampled_df[label] = pd.Series(y_resampled)
+
+            log.info(f'Adding in {len(resampled_df)} rows of SMOTE')
+            train_data = train_data.append(resampled_df, ignore_index=True).reset_index(drop=True)
+
+        test = X_val.copy()
+        train = train_data
+        y_truth = y_val
     else:
-        X_resampled, y_resampled = BorderlineSMOTE().fit_resample(X, y)
-        resampled_df = pd.DataFrame(X_resampled, columns=X.columns)
-        resampled_df[label] = pd.Series(y_resampled)
-
-        train_data = train_data.append(resampled_df, ignore_index=True).reset_index(drop=True)
-
-    test = X_val.copy()
-    train = train_data
+        y_truth = test[label]
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
@@ -191,7 +198,7 @@ def run(dataset, config):
                   models_ensemble_count=num_models_ensemble,
                   training_duration=training.duration,
                   predict_duration=predict.duration,
-                  truth=y_val)
+                  truth=y_truth)
 
 
 def save_artifacts(predictor, leaderboard, config):

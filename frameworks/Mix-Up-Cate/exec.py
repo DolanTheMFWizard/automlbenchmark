@@ -5,6 +5,8 @@ import sys
 import tempfile
 import warnings
 
+from imblearn.over_sampling import BorderlineSMOTE
+
 warnings.simplefilter("ignore")
 
 if sys.platform == 'darwin':
@@ -56,34 +58,30 @@ def run(dataset, config):
     train_data = TabularDataset(train)
     test_data = TabularDataset(test)
 
-    test_data = test_data.drop(columns=[label])
-
     predictor_og = TabularPredictor(label=label).fit(train_data, time_limit=10)
     X, y, X_val, y_val, X_unlabeled, holdout_frac, num_bag_folds, groups = predictor_og._learner.general_data_processing(
-        train_data, None, test_data, 0, 1)
+        train_data, test_data, test_data, 0, 1)
 
     train_data = X.copy()
     y = y.reset_index(drop=True)
     train_data[label] = y
 
-    categorical_features = train_data.columns[train_data.dtypes == 'category']
-
     if predictor_og.problem_type == 'regression':
-    #     for feat in categorical_features:
-    #         train_data[feat] = pd.to_numeric(train_data[feat])
-    #
-    #     for feat in categorical_features:
-    #         X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
-    #
-    #     num_samples = int(len(train_data) / 2)
-    #     train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
-    #     train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
-    #     lam = np.random.beta(0.4, 0.4, num_samples)[:, None].repeat(len(train_data.columns), axis=1)
-    #
-    #     train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
-    #
-    #     train_data.append(train_data_mixed).reset_index(drop=True)
-    # else:
+        # for feat in categorical_features:
+        #     train_data[feat] = pd.to_numeric(train_data[feat])
+        #
+        # for feat in categorical_features:
+        #     X_unlabeled[feat] = pd.to_numeric(X_unlabeled[feat])
+        #
+        # num_samples = int(len(train_data) / 2)
+        # train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
+        # train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
+        # lam = np.random.beta(0.4, 0.4, num_samples)[:, None].repeat(len(train_data.columns), axis=1)
+        #
+        # train_data_mixed = lam * train_sample_1 + (1 - lam) * train_sample_2
+        #
+        # train_data.append(train_data_mixed).reset_index(drop=True)
+        # else:
         # num_samples = int(len(train_data) / 4)
         # train_sample_1 = train_data.sample(num_samples).reset_index(drop=True)
         # train_sample_2 = train_data.sample(num_samples).reset_index(drop=True)
@@ -96,7 +94,7 @@ def run(dataset, config):
         # train_data.append(train_data_mixed).reset_index(drop=True)
         numerical_features = train_data.columns[train_data.dtypes != 'category']
         categorical_features = train_data.columns[train_data.dtypes == 'category']
-
+        #
         if not categorical_features.empty:
             grouped_df = train_data.groupby(by=list(categorical_features))
             mixed_rows_df = None
@@ -125,8 +123,14 @@ def run(dataset, config):
                     mixed_rows_df = new_mixed_rows_df
 
             train_data = train_data.append(mixed_rows_df, ignore_index=True).reset_index(drop=True)
+    else:
+        X_resampled, y_resampled = BorderlineSMOTE().fit_resample(X, y)
+        resampled_df = pd.DataFrame(X_resampled, columns=X.columns)
+        resampled_df[label] = pd.Series(y_resampled)
 
-    test = X_unlabeled.copy()
+        train_data = train_data.append(resampled_df, ignore_index=True).reset_index(drop=True)
+
+    test = X_val.copy()
     train = train_data
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
@@ -148,7 +152,6 @@ def run(dataset, config):
     if is_classification:
         with Timer() as predict:
             probabilities = predictor.predict_proba(test, as_multiclass=True)
-            probabilities.columns = predictor_og._learner.label_cleaner.inverse_transform(probabilities.columns)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
         with Timer() as predict:
@@ -187,7 +190,8 @@ def run(dataset, config):
                   models_count=num_models_trained,
                   models_ensemble_count=num_models_ensemble,
                   training_duration=training.duration,
-                  predict_duration=predict.duration)
+                  predict_duration=predict.duration,
+                  truth=y_val)
 
 
 def save_artifacts(predictor, leaderboard, config):

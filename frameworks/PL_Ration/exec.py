@@ -4,6 +4,7 @@ import shutil
 import sys
 import tempfile
 import warnings
+import time
 
 warnings.simplefilter("ignore")
 
@@ -121,19 +122,20 @@ def run(dataset, config):
 
     if is_pseudo:
         log.info(f"Running Pseudolabel fit with {num_iter} iterations")
-        with Timer() as predict:
-            if is_transductive:
-                predictor, probabilities = predictor.fit_pseudolabel(test_data=unlabeled_df,
+        if is_transductive:
+            with Timer() as predict:
+                predictor, probabilities = predictor.fit_pseudolabel(pseudo_data=unlabeled_df,
                                                                      max_iter=num_iter,
                                                                      return_pred_prob=True,
                                                                      time_limit=config.max_runtime_seconds / time_split,
                                                                      **training_params)
-            else:
-                predictor = predictor.fit_pseudolabel(test_data=unlabeled_df,
-                                                      max_iter=num_iter,
-                                                      return_pred_prob=False,
-                                                      time_limit=config.max_runtime_seconds / time_split,
-                                                      **training_params)
+        else:
+            predictor = predictor.fit_pseudolabel(test_data=unlabeled_df,
+                                                  max_iter=num_iter,
+                                                  return_pred_prob=False,
+                                                  time_limit=config.max_runtime_seconds / time_split,
+                                                  **training_params)
+        training.stop = time.time()
     else:
         log.info('No Pseudolabeling used')
         probabilities = None

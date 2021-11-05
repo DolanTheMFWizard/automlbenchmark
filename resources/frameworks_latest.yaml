@@ -178,17 +178,18 @@ Mix-Up-Cate:
     _is_data_aug: True
 
 Mix-Up-Cate_best:
+  extends: Mix-Up-Cate
   version: "latest"
   params:
     _is_data_aug: True
     presets: "best_quality"
 
 AG_Mix-Up-Cate:
-  extends: Mix-Up_Cate
+  extends: Mix-Up-Cate
   version: "latest"
 
 AG_Mix-Up-Cate_best:
-  extends: Mix-Up_Cate
+  extends: Mix-Up-Cate
   version: "latest"
   params:
     presets: "best_quality"

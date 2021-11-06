@@ -130,7 +130,7 @@ def run(dataset, config):
                                                                      time_limit=config.max_runtime_seconds / time_split,
                                                                      **training_params)
         else:
-            predictor = predictor.fit_pseudolabel(test_data=unlabeled_df,
+            predictor = predictor.fit_pseudolabel(pseudo_data=unlabeled_df,
                                                   max_iter=num_iter,
                                                   return_pred_prob=False,
                                                   time_limit=config.max_runtime_seconds / time_split,

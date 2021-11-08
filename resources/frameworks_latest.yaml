@@ -208,6 +208,9 @@ Vector_Scaling:
   params:
     calibrate: True
 
+AG_VS:
+  version: "latest"
+
 Refit_Full:
   extends: AutoGluon
   version: "latest"
@@ -218,6 +221,10 @@ Vector_Scaling_best:
   version: "latest"
   params:
     calibrate: True
+
+AG_best_VS:
+  extends: Vector_Scaling
+  version: "latest"
 
 Feature_Generator:
   version: "latest"

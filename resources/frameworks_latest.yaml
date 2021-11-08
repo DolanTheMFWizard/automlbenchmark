@@ -23,6 +23,7 @@ PL_Ration:
   params:
     _use_pseudo: True
 
+
 # Large test. Then 50% of train used for PL
 AG_Ration_large_test_SS:
   extends: PL_Ration
@@ -54,6 +55,7 @@ AG_Ration_large_test_transductive:
   params:
     _use_pseudo: False
     _test_frac: 0.75
+
 
 # Best quality standard
 AG_Ration_best:

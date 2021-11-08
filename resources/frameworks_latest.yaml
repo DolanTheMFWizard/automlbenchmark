@@ -209,6 +209,7 @@ Vector_Scaling:
     calibrate: True
 
 AG_VS:
+  extends: Vector_Scaling
   version: "latest"
 
 Refit_Full:

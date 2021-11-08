@@ -23,13 +23,13 @@ PL_Ration:
   params:
     _use_pseudo: True
 
+
 # Large test. Then 50% of train used for PL
 AG_Ration_large_test_SS:
   extends: PL_Ration
   version: "latest"
   params:
     _use_pseudo: False
-    _test_frac: 0.55
     _unlabeled_frac: 0.5
 
 PL_Ration_large_test_SS:
@@ -37,7 +37,6 @@ PL_Ration_large_test_SS:
   version: "latest"
   params:
     _use_pseudo: True
-    _test_frac: 0.55
     _unlabeled_frac: 0.5
 
 
@@ -56,6 +55,7 @@ AG_Ration_large_test_transductive:
   params:
     _use_pseudo: False
     _test_frac: 0.75
+
 
 # Best quality standard
 AG_Ration_best:
@@ -80,7 +80,6 @@ AG_best_Ration_large_test_SS:
   version: "latest"
   params:
     _use_pseudo: False
-    _test_frac: 0.55
     _unlabeled_frac: 0.5
     presets: "best_quality"
     num_bag_sets: 1
@@ -90,10 +89,10 @@ PL_best_Ration_large_test_SS:
   version: "latest"
   params:
     _use_pseudo: True
-    _test_frac: 0.55
     _unlabeled_frac: 0.5
     presets: "best_quality"
     num_bag_sets: 1
+    _leaderboard_test: True
 
 # Large test transductive
 PL_best_Ration_large_test_transductive:
@@ -105,6 +104,7 @@ PL_best_Ration_large_test_transductive:
     _is_transductive: True
     presets: "best_quality"
     num_bag_sets: 1
+    _leaderboard_test: True
 
 AG_best_Ration_large_test_transductive:
   extends: PL_Ration
@@ -123,15 +123,17 @@ PL_Ration_split_transductive:
     _use_pseudo: True
     _num_iter: 5
     _is_transductive: True
+    _leaderboard_test: True
 
 PL_Ration_split_SS:
   extends: PL_Ration
   version: "latest"
   params:
-    _test_frac: 0.55
     _unlabeled_frac: 0.5
     _use_pseudo: True
     _num_iter: 5
+    _leaderboard_test: True
+
 
 PL_best_Ration_split_transductive:
   extends: PL_Ration
@@ -143,17 +145,18 @@ PL_best_Ration_split_transductive:
     _is_transductive: True
     presets: "best_quality"
     num_bag_sets: 1
+    _leaderboard_test: True
 
 PL_best_Ration_split_SS:
   extends: PL_Ration
   version: "latest"
   params:
-    _test_frac: 0.55
     _unlabeled_frac: 0.5
     _use_pseudo: True
     _num_iter: 5
     presets: "best_quality"
     num_bag_sets: 1
+    _leaderboard_test: True
 
 
 PL_Ration_split_best:
@@ -164,6 +167,7 @@ PL_Ration_split_best:
     _num_iter: 5
     presets: best_quality
     num_bag_sets: 1
+    _leaderboard_test: True
 
 PL_Aux_Ration:
   version: "latest"

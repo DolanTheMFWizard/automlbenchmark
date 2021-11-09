@@ -165,13 +165,26 @@ PL_Ration_split_best:
     num_bag_sets: 1
     _leaderboard_test: True
 
-PL_Aux_Ration:
+PL_Aux_Ration_split_SS:
+  extends: PL_Aux_Ration
   version: "latest"
   params:
     _unlabeled_frac: 0.5
-    _val_frac:
     _use_pseudo: True
+    _num_iter: 5
     _leaderboard_test: True
+
+PL_Aux_Ration_split_transductive:
+  extends: PL_Aux_Ration
+  version: "latest"
+  params:
+    _test_frac: 0.75
+    _use_pseudo: True
+    _num_iter: 5
+    _is_transductive: True
+    num_bag_sets: 1
+    _leaderboard_test: True
+
 
 Mix-Up:
   version: "latest"

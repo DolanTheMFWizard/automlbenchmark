@@ -171,6 +171,7 @@ PL_Aux_Ration:
     _percent_test: 0.75
     _val_frac:
     _use_pseudo: True
+    _leaderboard_test: True
 
 Mix-Up:
   version: "latest"

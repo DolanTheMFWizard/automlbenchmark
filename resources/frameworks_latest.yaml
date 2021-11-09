@@ -168,7 +168,7 @@ PL_Ration_split_best:
 PL_Aux_Ration:
   version: "latest"
   params:
-    _percent_test: 0.75
+    _unlabeled_frac: 0.5
     _val_frac:
     _use_pseudo: True
     _leaderboard_test: True

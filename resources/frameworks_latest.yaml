@@ -175,6 +175,7 @@ PL_Aux_Ration:
     _percent_test: 0.75
     _val_frac:
     _use_pseudo: True
+    _leaderboard_test: True
 
 Mix-Up:
   version: "latest"
@@ -212,6 +213,10 @@ Vector_Scaling:
   params:
     calibrate: True
 
+AG_VS:
+  extends: Vector_Scaling
+  version: "latest"
+
 Refit_Full:
   extends: AutoGluon
   version: "latest"
@@ -222,6 +227,10 @@ Vector_Scaling_best:
   version: "latest"
   params:
     calibrate: True
+
+AG_best_VS:
+  extends: Vector_Scaling
+  version: "latest"
 
 Feature_Generator:
   version: "latest"

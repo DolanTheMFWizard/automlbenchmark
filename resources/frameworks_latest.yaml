@@ -172,7 +172,7 @@ PL_Ration_split_best:
 PL_Aux_Ration:
   version: "latest"
 
-aux_SS:
+Aux_SS:
   extends: PL_Aux_Ration
   version: "latest"
   params:
@@ -181,7 +181,7 @@ aux_SS:
     _num_iter: 5
     _leaderboard_test: True
 
-aux_transductive:
+Aux_transductive:
   extends: PL_Aux_Ration
   version: "latest"
   params:
@@ -192,7 +192,7 @@ aux_transductive:
     num_bag_sets: 1
     _leaderboard_test: True
 
-aux_best_SS:
+Aux_best_SS:
   extends: PL_Aux_Ration
   version: "latest"
   params:
@@ -202,7 +202,7 @@ aux_best_SS:
     _leaderboard_test: True
     presets: best_quality
 
-aux_best_transductive:
+Aux_best_transductive:
   extends: PL_Aux_Ration
   version: "latest"
   params:

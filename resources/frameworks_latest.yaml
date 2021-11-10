@@ -165,7 +165,7 @@ PL_Ration_split_best:
     num_bag_sets: 1
     _leaderboard_test: True
 
-PL_Aux_Ration_split_SS:
+aux_SS:
   extends: PL_Aux_Ration
   version: "latest"
   params:
@@ -174,7 +174,7 @@ PL_Aux_Ration_split_SS:
     _num_iter: 5
     _leaderboard_test: True
 
-PL_Aux_Ration_split_transductive:
+aux_transductive:
   extends: PL_Aux_Ration
   version: "latest"
   params:
@@ -185,6 +185,27 @@ PL_Aux_Ration_split_transductive:
     num_bag_sets: 1
     _leaderboard_test: True
 
+aux_best_SS:
+  extends: PL_Aux_Ration
+  version: "latest"
+  params:
+    _unlabeled_frac: 0.5
+    _use_pseudo: True
+    _num_iter: 5
+    _leaderboard_test: True
+    presets: best_quality
+
+aux_best_transductive:
+  extends: PL_Aux_Ration
+  version: "latest"
+  params:
+    _test_frac: 0.75
+    _use_pseudo: True
+    _num_iter: 5
+    _is_transductive: True
+    num_bag_sets: 1
+    _leaderboard_test: True
+    presets: best_quality
 
 Mix-Up:
   version: "latest"

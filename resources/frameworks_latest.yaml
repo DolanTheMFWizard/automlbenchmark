@@ -189,7 +189,6 @@ Aux_transductive:
     _use_pseudo: True
     _num_iter: 5
     _is_transductive: True
-    num_bag_sets: 1
     _leaderboard_test: True
 
 Aux_best_SS:
@@ -201,6 +200,7 @@ Aux_best_SS:
     _num_iter: 5
     _leaderboard_test: True
     presets: best_quality
+    num_bag_sets: 1
 
 Aux_best_transductive:
   extends: PL_Aux_Ration

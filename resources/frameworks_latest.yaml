@@ -165,6 +165,9 @@ PL_Ration_split_best:
     num_bag_sets: 1
     _leaderboard_test: True
 
+PL_Aux_Ration:
+  version: "latest"
+
 aux_SS:
   extends: PL_Aux_Ration
   version: "latest"

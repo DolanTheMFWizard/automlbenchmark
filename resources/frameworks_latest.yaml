@@ -121,7 +121,7 @@ PL_Ration_split_transductive:
   params:
     _test_frac: 0.75
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     _is_transductive: True
     _leaderboard_test: True
 
@@ -131,7 +131,7 @@ PL_Ration_split_SS:
   params:
     _unlabeled_frac: 0.5
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     _leaderboard_test: True
 
 
@@ -141,7 +141,7 @@ PL_best_Ration_split_transductive:
   params:
     _test_frac: 0.75
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     _is_transductive: True
     presets: "best_quality"
     num_bag_sets: 1
@@ -153,7 +153,7 @@ PL_best_Ration_split_SS:
   params:
     _unlabeled_frac: 0.5
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     presets: "best_quality"
     num_bag_sets: 1
     _leaderboard_test: True
@@ -164,7 +164,7 @@ PL_Ration_split_best:
   version: "latest"
   params:
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     presets: best_quality
     num_bag_sets: 1
     _leaderboard_test: True
@@ -178,7 +178,7 @@ Aux_SS:
   params:
     _unlabeled_frac: 0.5
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     _leaderboard_test: True
 
 Aux_transductive:
@@ -187,7 +187,7 @@ Aux_transductive:
   params:
     _test_frac: 0.75
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     _is_transductive: True
     _leaderboard_test: True
 
@@ -197,7 +197,7 @@ Aux_best_SS:
   params:
     _unlabeled_frac: 0.5
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     _leaderboard_test: True
     presets: best_quality
     num_bag_sets: 1
@@ -208,7 +208,7 @@ Aux_best_transductive:
   params:
     _test_frac: 0.75
     _use_pseudo: True
-    _num_iter: 5
+    _num_iter: 3
     _is_transductive: True
     num_bag_sets: 1
     _leaderboard_test: True

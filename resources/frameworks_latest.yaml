@@ -256,6 +256,7 @@ Dirichlet_Cal_best:
   version: "latest"
   params:
     calibrate: True
+    presets: best_quality
 
 Feature_Generator:
   version: "latest"

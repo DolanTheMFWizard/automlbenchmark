@@ -252,7 +252,7 @@ Refit_Full:
   _refit_full: True
 
 Dirichlet_Cal_best:
-  extends: Dirichlet_Calibrate
+  extends: Dirichlet_Cal
   version: "latest"
   params:
     calibrate: True

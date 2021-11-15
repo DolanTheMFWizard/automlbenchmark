@@ -177,6 +177,16 @@ Aux_SS:
     _num_iter: 3
     _leaderboard_test: True
 
+Aux_SS_weighted:
+  extends: PL_Aux_Ration
+  version: "latest"
+  params:
+    _unlabeled_frac: 0.5
+    _use_pseudo: True
+    _num_iter: 3
+    _leaderboard_test: True
+    _use_weighted_ensemble: True
+
 Aux_transductive:
   extends: PL_Aux_Ration
   version: "latest"

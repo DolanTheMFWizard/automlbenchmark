@@ -142,9 +142,12 @@ def run(dataset, config):
         probabilities = None
 
     if is_weighted_ensemble:
+        if is_transductive:
+            raise Exception('Transductive is on and weighted ensemble on. Weighted ensemble doesn\'t support transductive.')
         log.info('Running weighted ensemble')
         predictor.fit_weighted_ensemble()
         best_model_name = predictor.leaderboard().iloc[0].model
+        log.info(f'Best model name: {best_model_name}')
     else:
         log.info('Not applying weighted ensemble')
         best_model_name = None

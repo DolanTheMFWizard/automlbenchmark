@@ -3,8 +3,8 @@ import os
 import shutil
 import sys
 import tempfile
-import warnings
 import time
+import warnings
 
 warnings.simplefilter("ignore")
 
@@ -51,6 +51,7 @@ def run(dataset, config):
     test_frac = config.framework_params.get('_test_frac', None)
     unlabeled_frac = config.framework_params.get('_unlabeled_frac', None)
     is_pseudo = config.framework_params.get('_use_pseudo', False)
+    is_weighted_ensemble = config.framework_params.get('_use_weighted_ensemble', False)
     num_iter = config.framework_params.get('_num_iter', 1)
     is_transductive = config.framework_params.get('_is_transductive', False)
     time_split = 1 if num_iter == 1 else num_iter + 1
@@ -140,19 +141,27 @@ def run(dataset, config):
         log.info('No Pseudolabeling used')
         probabilities = None
 
+    if is_weighted_ensemble:
+        log.info('Running weighted ensemble')
+        predictor.fit_weighted_ensemble()
+        best_model_name = predictor.leaderboard().iloc[0].model
+    else:
+        log.info('Not applying weighted ensemble')
+        best_model_name = None
+
     del train
 
     if is_classification:
         if not is_transductive:
             with Timer() as predict:
-                probabilities = predictor.predict_proba(test_df, as_multiclass=True)
+                probabilities = predictor.predict_proba(test_df, as_multiclass=True, model=best_model_name)
         predictions = probabilities.idxmax(axis=1).to_numpy()
     else:
         if is_transductive:
             predictions = probabilities
         else:
             with Timer() as predict:
-                predictions = predictor.predict(test_df, as_pandas=False)
+                predictions = predictor.predict(test_df, as_pandas=False, model=best_model_name)
         probabilities = None
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None

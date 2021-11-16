@@ -18,7 +18,7 @@ fi
 PIP install --upgrade pip
 PIP install --upgrade setuptools wheel
 PIP install "mxnet<2.0.0"
-PIP install "scikit-learn-intelex<2021.3"
+PIP install "scikit-learn-intelex"
 
 if [[ "$VERSION" == "stable" ]]; then
     PIP install --no-cache-dir -U ${PKG}
@@ -29,7 +29,7 @@ else
     # VERSION="pseudo_label_POC"
     # REPO="https://github.com/gradientsky/autogluon.git"
 
-    VERSION="vector_scaling"
+    VERSION="dirichlet_calibration"
     REPO="https://github.com/DolanTheMFWizard/autogluon.git"
     TARGET_DIR="${HERE}/lib/${PKG}"
     rm -Rf ${TARGET_DIR}

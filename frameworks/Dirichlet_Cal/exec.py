@@ -54,7 +54,7 @@ def run(dataset, config):
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
     if is_calibrate:
-        log.info("Vector Scaling on!!!")
+        log.info("Dirichlet Calibrate On!!")
 
     with Timer() as training:
         predictor = TabularPredictor(
@@ -65,6 +65,7 @@ def run(dataset, config):
         ).fit(
             train_data=train,
             time_limit=config.max_runtime_seconds,
+            verbosity=4,
             **training_params
         )
 

@@ -181,6 +181,16 @@ Aux_SS:
     _num_iter: 3
     _leaderboard_test: True
 
+Aux_SS_weighted:
+  extends: PL_Aux_Ration
+  version: "latest"
+  params:
+    _unlabeled_frac: 0.5
+    _use_pseudo: True
+    _num_iter: 3
+    _leaderboard_test: True
+    _use_weighted_ensemble: True
+
 Aux_transductive:
   extends: PL_Aux_Ration
   version: "latest"
@@ -245,29 +255,22 @@ Temperature_Scaling:
   params:
     calibrate: True
 
-Vector_Scaling:
+Dirichlet_Cal:
   version: "latest"
   params:
     calibrate: True
-
-AG_VS:
-  extends: Vector_Scaling
-  version: "latest"
 
 Refit_Full:
   extends: AutoGluon
   version: "latest"
   _refit_full: True
 
-Vector_Scaling_best:
-  extends: Vector_Scaling
+Dirichlet_Cal_best:
+  extends: Dirichlet_Cal
   version: "latest"
   params:
     calibrate: True
-
-AG_best_VS:
-  extends: Vector_Scaling
-  version: "latest"
+    presets: best_quality
 
 Feature_Generator:
   version: "latest"

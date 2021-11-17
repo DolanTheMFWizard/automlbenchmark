@@ -58,6 +58,7 @@ def run(dataset, config):
 
     if calibrate_method is not None:
         log.info(f"{calibrate_method} on!!!")
+        log.info(f"training_params: {training_params}")
 
     with Timer() as training:
         predictor = TabularPredictor(

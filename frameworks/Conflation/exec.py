@@ -46,6 +46,7 @@ def run(dataset, config):
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
     is_calibrate = training_params.get('calibrate', False)
+    is_refit_full = config.framework_params.get('is_refit_full', False)
 
     train, test = dataset.train.path, dataset.test.path
     label = dataset.target.name
@@ -54,7 +55,7 @@ def run(dataset, config):
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
     if is_calibrate:
-        log.info("Dirichlet Calibrate On!!")
+        log.info("Temperature Scaling on!!!")
 
     with Timer() as training:
         predictor = TabularPredictor(
@@ -65,9 +66,12 @@ def run(dataset, config):
         ).fit(
             train_data=train,
             time_limit=config.max_runtime_seconds,
-            verbosity=4,
             **training_params
         )
+
+        if is_refit_full:
+            log.info("Running refit full")
+            predictor.refit_full(model='best')
 
     del train
 

@@ -3,8 +3,8 @@ import os
 import shutil
 import sys
 import tempfile
-import warnings
 import time
+import warnings
 
 warnings.simplefilter("ignore")
 
@@ -53,6 +53,7 @@ def run(dataset, config):
     is_pseudo = config.framework_params.get('_use_pseudo', False)
     num_iter = config.framework_params.get('_num_iter', 1)
     is_transductive = config.framework_params.get('_is_transductive', False)
+    use_ensemble = config.framework_params.get('_use_ensemble', False)
     time_split = 1 if num_iter == 1 else num_iter + 1
 
     if is_transductive and not is_pseudo:
@@ -122,18 +123,24 @@ def run(dataset, config):
 
     if is_pseudo:
         log.info(f"Running Pseudolabel fit with max {num_iter} iterations")
+
+        if use_ensemble:
+            log.info('\'use_ensemble\' on!')
+
         if is_transductive:
             with Timer() as predict:
                 predictor, probabilities = predictor.fit_pseudolabel(pseudo_data=unlabeled_df,
                                                                      max_iter=num_iter,
                                                                      return_pred_prob=True,
                                                                      time_limit=config.max_runtime_seconds / time_split,
+                                                                     use_ensemble=use_ensemble,
                                                                      **training_params)
         else:
             predictor = predictor.fit_pseudolabel(pseudo_data=unlabeled_df,
                                                   max_iter=num_iter,
                                                   return_pred_prob=False,
                                                   time_limit=config.max_runtime_seconds / time_split,
+                                                  use_ensemble=use_ensemble,
                                                   **training_params)
         training.stop = time.time()
     else:

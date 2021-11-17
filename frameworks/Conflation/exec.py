@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import warnings
 import sys
 import tempfile
 import warnings
@@ -47,7 +48,7 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    calibrate = training_params.get('calibrate', None)
+    is_calibrate = training_params.get('calibrate', False)
     is_refit_full = config.framework_params.get('is_refit_full', False)
 
     train, test = dataset.train.path, dataset.test.path
@@ -56,7 +57,8 @@ def run(dataset, config):
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
-    log.info(f"Calibrate set to {calibrate}")
+    if is_calibrate:
+        log.info("Temperature Scaling on!!!")
 
     with Timer() as training:
         predictor = TabularPredictor(
@@ -67,7 +69,6 @@ def run(dataset, config):
         ).fit(
             train_data=train,
             time_limit=config.max_runtime_seconds,
-            verbosity=4,
             **training_params
         )
 

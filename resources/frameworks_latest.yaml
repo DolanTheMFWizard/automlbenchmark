@@ -17,27 +17,32 @@ Conflation:
 Conflation_dirichlet:
   extends: Conflation
   version: "latest"
-  calibrate: 'dirichlet_calibrate'
+  params:
+    calibrate: 'dirichlet_calibrate'
 
 Conflation_temp:
   extends: Conflation
   version: "latest"
-  calibrate: 'temperature_scaling'
+  params:
+    calibrate: 'temperature_scaling'
 
 Conflation_matrix:
   extends: Conflation
   version: "latest"
-  calibrate: 'matrix_scaling'
+  params:
+    calibrate: 'matrix_scaling'
 
 Conflation_vector:
   extends: Conflation
   version: "latest"
-  calibrate: 'vector_scaling'
+  params:
+    calibrate: 'vector_scaling'
 
 Conflation_fix_dir:
   extends: Conflation
   version: "latest"
-  calibrate: 'fixed_dirichlet'
+  params:
+    calibrate: 'fixed_dirichlet'
 
 # Standard AG no changes
 AG_Ration:

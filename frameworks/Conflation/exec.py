@@ -47,7 +47,7 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    is_calibrate = training_params.get('calibrate', False)
+    calibrate_method = training_params.get('calibrate', None)
     is_refit_full = config.framework_params.get('is_refit_full', False)
 
     train, test = dataset.train.path, dataset.test.path
@@ -56,8 +56,8 @@ def run(dataset, config):
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
-    if is_calibrate:
-        log.info("Temperature Scaling on!!!")
+    if calibrate_method is not None:
+        log.info(f"{calibrate_method} on!!!")
 
     with Timer() as training:
         predictor = TabularPredictor(

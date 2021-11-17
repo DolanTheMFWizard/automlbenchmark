@@ -1,7 +1,6 @@
 import logging
 import os
 import shutil
-import warnings
 import sys
 import tempfile
 import warnings

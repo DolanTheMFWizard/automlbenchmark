@@ -1,9 +1,10 @@
 import logging
 import os
 import shutil
-import warnings
 import sys
 import tempfile
+import warnings
+
 warnings.simplefilter("ignore")
 
 if sys.platform == 'darwin':
@@ -11,6 +12,7 @@ if sys.platform == 'darwin':
 
 import matplotlib
 import pandas as pd
+
 matplotlib.use('agg')  # no need for tk
 
 from autogluon.tabular import TabularPredictor
@@ -45,7 +47,7 @@ def run(dataset, config):
 
     is_classification = config.type == 'classification'
     training_params = {k: v for k, v in config.framework_params.items() if not k.startswith('_')}
-    is_calibrate = training_params.get('calibrate', False)
+    calibrate_method = training_params.get('calibrate', None)
     is_refit_full = config.framework_params.get('is_refit_full', False)
 
     train, test = dataset.train.path, dataset.test.path
@@ -54,8 +56,8 @@ def run(dataset, config):
 
     models_dir = tempfile.mkdtemp() + os.sep  # passed to AG
 
-    if is_calibrate:
-        log.info("Temperature Scaling on!!!")
+    if calibrate_method is not None:
+        log.info(f"{calibrate_method} on!!!")
 
     with Timer() as training:
         predictor = TabularPredictor(
@@ -86,8 +88,10 @@ def run(dataset, config):
 
     prob_labels = probabilities.columns.values.astype(str).tolist() if probabilities is not None else None
 
-    _leaderboard_extra_info = config.framework_params.get('_leaderboard_extra_info', False)  # whether to get extra model info (very verbose)
-    _leaderboard_test = config.framework_params.get('_leaderboard_test', False)  # whether to compute test scores in leaderboard (expensive)
+    _leaderboard_extra_info = config.framework_params.get('_leaderboard_extra_info',
+                                                          False)  # whether to get extra model info (very verbose)
+    _leaderboard_test = config.framework_params.get('_leaderboard_test',
+                                                    False)  # whether to compute test scores in leaderboard (expensive)
     leaderboard_kwargs = dict(silent=True, extra_info=_leaderboard_extra_info)
     # Disabled leaderboard test data input by default to avoid long running computation, remove 7200s timeout limitation to re-enable
     if _leaderboard_test:

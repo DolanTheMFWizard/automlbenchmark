@@ -14,30 +14,47 @@ AutoGluon:
 Conflation:
   version: "latest"
 
+Vector_Scaling:
+  version: "latest"
+  params:
+    calibrate: True
+
+Vector_Scaling_Best:
+  extends: Vector_Scaling
+  version: "latest"
+  params:
+    calibrate: True
+    presets: 'best_qualty'
+
 Conflation_dirichlet:
   extends: Conflation
   version: "latest"
-  calibrate: 'dirichlet_calibrate'
+  params:
+    calibrate: 'dirichlet_calibrate'
 
 Conflation_temp:
   extends: Conflation
   version: "latest"
-  calibrate: 'temperature_scaling'
+  params:
+    calibrate: 'temperature_scaling'
 
 Conflation_matrix:
   extends: Conflation
   version: "latest"
-  calibrate: 'matrix_scaling'
+  params:
+    calibrate: 'matrix_scaling'
 
 Conflation_vector:
   extends: Conflation
   version: "latest"
-  calibrate: 'vector_scaling'
+  params:
+    calibrate: 'vector_scaling'
 
 Conflation_fix_dir:
   extends: Conflation
   version: "latest"
-  calibrate: 'fixed_dirichlet'
+  params:
+    calibrate: 'fixed_dirichlet'
 
 # Standard AG no changes
 AG_Ration:
@@ -253,6 +270,33 @@ Ensemble_best_transductive:
     presets: best_quality
     _use_ensemble: True
 
+Weighted_Ensemble_best_SS:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _unlabeled_frac: 0.5
+    _use_pseudo: True
+    _num_iter: 3
+    _leaderboard_test: True
+    presets: best_quality
+    num_bag_sets: 1
+    _use_ensemble: True
+    _weighted_ensemble: True
+
+Weighted_Ensemble_best_transductive:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _test_frac: 0.75
+    _use_pseudo: True
+    _num_iter: 3
+    _is_transductive: True
+    num_bag_sets: 1
+    _leaderboard_test: True
+    presets: best_quality
+    _use_ensemble: True
+    _weighted_ensemble: True
+
 Mix-Up:
   version: "latest"
 
@@ -284,22 +328,10 @@ Temperature_Scaling:
   params:
     calibrate: True
 
-Dirichlet_Cal:
-  version: "latest"
-  params:
-    calibrate: True
-
 Refit_Full:
   extends: AutoGluon
   version: "latest"
   _refit_full: True
-
-Dirichlet_Cal_best:
-  extends: Dirichlet_Cal
-  version: "latest"
-  params:
-    calibrate: True
-    presets: best_quality
 
 Feature_Generator:
   version: "latest"

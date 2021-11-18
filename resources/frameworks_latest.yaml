@@ -14,6 +14,18 @@ AutoGluon:
 Conflation:
   version: "latest"
 
+Vector_Scaling:
+  version: "latest"
+  params:
+    calibrate: True
+
+Vector_Scaling_Best:
+  extends: Vector_Scaling
+  version: "latest"
+  params:
+    calibrate: True
+    presets: 'best_qualty'
+
 Conflation_dirichlet:
   extends: Conflation
   version: "latest"
@@ -285,22 +297,10 @@ Temperature_Scaling:
   params:
     calibrate: True
 
-Dirichlet_Cal:
-  version: "latest"
-  params:
-    calibrate: True
-
 Refit_Full:
   extends: AutoGluon
   version: "latest"
   _refit_full: True
-
-Dirichlet_Cal_best:
-  extends: Dirichlet_Cal
-  version: "latest"
-  params:
-    calibrate: True
-    presets: best_quality
 
 Feature_Generator:
   version: "latest"

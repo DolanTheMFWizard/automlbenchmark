@@ -54,6 +54,7 @@ def run(dataset, config):
     num_iter = config.framework_params.get('_num_iter', 1)
     is_transductive = config.framework_params.get('_is_transductive', False)
     use_ensemble = config.framework_params.get('_use_ensemble', False)
+    fit_WE = config.framework_params.get('_weighted_ensemble', False)
     time_split = 1 if num_iter == 1 else num_iter + 1
 
     if is_transductive and not is_pseudo:
@@ -124,6 +125,9 @@ def run(dataset, config):
     if is_pseudo:
         log.info(f"Running Pseudolabel fit with max {num_iter} iterations")
 
+        if fit_WE:
+            log.info("Will use 'fit_weighted_ensemble' during pseudo label algorithm")
+
         if use_ensemble:
             log.info('\'use_ensemble\' on!')
 
@@ -134,6 +138,7 @@ def run(dataset, config):
                                                                      return_pred_prob=True,
                                                                      time_limit=config.max_runtime_seconds / time_split,
                                                                      use_ensemble=use_ensemble,
+                                                                     fit_ensemble=fit_WE,
                                                                      **training_params)
         else:
             predictor = predictor.fit_pseudolabel(pseudo_data=unlabeled_df,
@@ -141,6 +146,7 @@ def run(dataset, config):
                                                   return_pred_prob=False,
                                                   time_limit=config.max_runtime_seconds / time_split,
                                                   use_ensemble=use_ensemble,
+                                                  fit_ensemble=fit_WE,
                                                   **training_params)
         training.stop = time.time()
     else:

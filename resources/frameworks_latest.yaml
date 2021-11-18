@@ -266,6 +266,33 @@ Ensemble_best_transductive:
     presets: best_quality
     _use_ensemble: True
 
+Weighted_Ensemble_best_SS:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _unlabeled_frac: 0.5
+    _use_pseudo: True
+    _num_iter: 3
+    _leaderboard_test: True
+    presets: best_quality
+    num_bag_sets: 1
+    _use_ensemble: True
+    _weighted_ensemble: True
+
+Weighted_Ensemble_best_transductive:
+  extends: PL_Ration
+  version: "latest"
+  params:
+    _test_frac: 0.75
+    _use_pseudo: True
+    _num_iter: 3
+    _is_transductive: True
+    num_bag_sets: 1
+    _leaderboard_test: True
+    presets: best_quality
+    _use_ensemble: True
+    _weighted_ensemble: True
+
 Mix-Up:
   version: "latest"
 
